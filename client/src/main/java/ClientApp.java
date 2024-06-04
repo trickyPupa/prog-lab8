@@ -3,10 +3,12 @@ import common.OutputManager;
 import common.abstractions.*;
 import common.exceptions.*;
 import exceptions.ConnectionsFallsExcetion;
+import gui.AppStart;
 import network.ConnectionRequest;
 import network.ConnectionResponse;
 import network.DisconnectionRequest;
 
+import javax.swing.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,13 +18,21 @@ import java.util.Arrays;
 
 import static common.utils.Funcs.isInt;
 
+// вариант 765445678
 public class ClientApp {
     public static int PORT = 1783;
     public static String HOST_NAME = "localhost";
 
     public static void main(String[] args) {
-//        test();
         try {
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                 UnsupportedLookAndFeelException e) {
+            throw new RuntimeException(e);
+        }
+
+//        test();
+        /*try {
             if (isInt(args[1]))
                 PORT = Integer.parseInt(args[1]);
             else
@@ -37,7 +47,13 @@ public class ClientApp {
             start();
         } catch (ArrayIndexOutOfBoundsException e){
             System.out.println("Не переданы необходимые аргументы: адрес сервера, порт.");
-        }
+        }*/
+
+        var app = new AppStart();
+        app.pack();
+        app.setVisible(true);
+//        System.exit(0);
+
     }
 
     public static void test(){
