@@ -1,46 +1,152 @@
 package gui;
 
 import client.*;
-import common.OutputManager;
-import common.abstractions.AbstractAuthenticationReceiver;
-import common.abstractions.AbstractReceiver;
-import common.abstractions.IOutputManager;
-import common.exceptions.*;
-import exceptions.ConnectionsFallsExcetion;
-import network.ConnectionRequest;
-import network.ConnectionResponse;
+import common.commands.abstractions.Command;
+import common.commands.implementations.ShowCommand;
+import common.model.entities.Movie;
+import network.CommandRequest;
+import network.Response;
 
 import javax.swing.*;
-import java.awt.*;
+import javax.swing.table.AbstractTableModel;
 import java.io.IOException;
-import java.net.PortUnreachableException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class MainWindow extends JFrame {
-    private JTable table;
     private JPanel mainPanel;
-    private JButton button1;
-    private JButton button2;
-    private JButton button3;
-    private JPanel commands;
-    private JButton button4;
-    private JButton button5;
-    private JPanel helping;
-    private JTextField dataInput;
-    private JLabel info;
+    private JPanel buttons;
+    private JScrollPane centerPane;
 
-    public MainWindow() {
+    private JLabel info;
+    private JTextArea textArea;
+    private JLabel textAreaLabel;
+    private JTable table;
+
+    private JButton createButton;
+    private JButton editButton;
+    private JButton deleteButton;
+    private JButton visualizeButton;
+    private JButton commandsButton;
+
+    private ManagersContainer managers;
+    private ResourceBundle curBundle;
+    private ArrayList<Movie> data;
+
+    protected class Receiver {
+        ;
+    }
+
+    public MainWindow(ManagersContainer managersContainer) {
+        this.managers = managersContainer;
+        curBundle = ResourceBundle.getBundle("gui", managers.getCurrentLocale());
+
         setName("movie app");
+        initData();
+        initText();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(300, 300);
+        pack();
+        setSize(700, 700);
         setLocationRelativeTo(null);
 
-        var authForm = new AuthenticationForm();
+        authentication();
+    }
+
+    protected void authentication(){
+        var authForm = new AuthenticationForm(managers);
 
         setContentPane(authForm.getPanel());
         setVisible(true);
+
+        while(true){
+            try {
+                authForm.isOk.wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            if (authForm.isOk){
+                setContentPane(mainPanel);
+                break;
+            }
+        }
+    }
+
+    protected static class MovieTableModel extends AbstractTableModel {
+        private ArrayList<Movie> movies;
+        private final String[] columnNames = {"ID", "Title", "Year", "Director", "Rating"};
+
+        public MovieTableModel(Collection<Movie> movies) {
+            this.movies = (ArrayList<Movie>) movies;
+        }
+
+        @Override
+        public int getRowCount() {
+            return movies.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            Movie movie = movies.get(rowIndex);
+            return switch (columnIndex) {
+                case 0 -> movie.getId();
+                case 1 -> movie.getName();
+                case 2 -> movie.getLength();
+                default -> null;
+            };
+        }
+
+        @Override
+        public String getColumnName(int columnIndex) {
+            return columnNames[columnIndex];
+        }
+    }
+
+    private void initData(){
+        var tableModel = new MovieTableModel(data);
+
+        table.setModel(tableModel);
+    }
+
+    private void loadData() {
+        /*var requestManager = managers.getRequestManager();
+        // сделать запрос
+        // GetDataRequest GetDataResponse
+        var getDataRequest = new CommandRequest(new ShowCommand(new Object[]{}), new ArrayList<>());
+        requestManager.makeRequest(getDataRequest);
+        Response response;
+        try {
+            response = requestManager.getResponse();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        data = (Response) response.getData();*/
+
+        data = new ArrayList<>();
+        data.add(new Movie());
+    }
+
+    private void initText(){
+        info.setText(curBundle.getString("main_info_label"));
+
+        createButton.setText(curBundle.getString("main_create_button"));
+        editButton.setText(curBundle.getString("main_edit_button"));
+        deleteButton.setText(curBundle.getString("main_delete_button"));
+        commandsButton.setText(curBundle.getString("main_command_button"));
+        visualizeButton.setText(curBundle.getString("main_vis_button"));
+    }
+
+    protected void switchLocale(Locale locale){
+        curBundle = ResourceBundle.getBundle("gui", locale);
+        managers.setCurrentLocale(locale);
+        initText();
     }
 
     /*public void start() {

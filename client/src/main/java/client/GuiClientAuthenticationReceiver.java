@@ -2,17 +2,13 @@ package client;
 
 import builders.AuthUser;
 import builders.RegisterUser;
-import common.abstractions.AbstractAuthenticationReceiver;
 import common.abstractions.AbstractReceiver;
 import common.user.Session;
 import common.user.User;
 
-public class ClientAuthenticationReceiver extends AbstractAuthenticationReceiver {
-    protected final AbstractClientRequestManager requestManager;
-
-    public ClientAuthenticationReceiver(AbstractReceiver receiver, AbstractClientRequestManager requestManager) {
-        super(receiver);
-        this.requestManager = requestManager;
+public class GuiClientAuthenticationReceiver extends ClientAuthenticationReceiver {
+    public GuiClientAuthenticationReceiver(AbstractReceiver receiver, AbstractClientRequestManager requestManager) {
+        super(receiver, requestManager);
     }
 
     @Override

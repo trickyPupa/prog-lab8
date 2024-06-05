@@ -84,4 +84,25 @@ public class AuthUser {
             }
         }
     }
+
+    public static Pair<User, String> getUser(String login, String password, AbstractClientRequestManager requestManager){
+        var request = new LoginCheckRequest(login);
+        requestManager.makeRequest(request);
+
+        try {
+            var response = (LoginCheckResponse) requestManager.getResponse();
+
+            if (!response.isLoginExists()){
+//                output.print("Пользователь с таким логином не существует. Зарегистрируйте нового пользователя или введите существующий логин.");
+                return null;
+            }
+            String salt = response.getSalt();
+
+            String hashedPwd = EncryptionManager.byteArrayToHexString(EncryptionManager.encrypt(password + salt));
+
+            return new Pair<>(new User(login, hashedPwd), salt);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

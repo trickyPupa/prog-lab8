@@ -1,20 +1,20 @@
 import client.*;
 import common.OutputManager;
 import common.abstractions.*;
+import common.commands.implementations.AuthCommand;
 import common.exceptions.*;
 import exceptions.ConnectionsFallsExcetion;
 import gui.AppStart;
 import network.ConnectionRequest;
 import network.ConnectionResponse;
 import network.DisconnectionRequest;
+import network.UserAuthRequest;
 
 import javax.swing.*;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
+import java.util.*;
 
 import static common.utils.Funcs.isInt;
 
@@ -24,13 +24,6 @@ public class ClientApp {
     public static String HOST_NAME = "localhost";
 
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 UnsupportedLookAndFeelException e) {
-            throw new RuntimeException(e);
-        }
-
 //        test();
         /*try {
             if (isInt(args[1]))
@@ -49,10 +42,7 @@ public class ClientApp {
             System.out.println("Не переданы необходимые аргументы: адрес сервера, порт.");
         }*/
 
-        var app = new AppStart();
-        app.pack();
-        app.setVisible(true);
-//        System.exit(0);
+        start2();
 
     }
 
@@ -60,43 +50,8 @@ public class ClientApp {
         try(InputStream input = new BufferedInputStream(System.in)){
 
             IInputManager inputManager = new InputManager(input);
-            IOutputManager outputManager = new OutputManager();
-            AbstractReceiver clientReceiver = new ClientReceiver(inputManager, outputManager);
-
             AbstractClientRequestManager clientRequestManager = new ClientRequestManager(HOST_NAME, PORT);
-            AbstractAuthenticationReceiver receiver = new ClientAuthenticationReceiver(clientReceiver, clientRequestManager);
-
-            ClientCommandHandler handler = new ClientCommandHandler(inputManager, outputManager, clientRequestManager,
-                    receiver);
-
-            while (true){
-                try {
-                    outputManager.print("Ввод:");
-                    handler.nextCommand();
-
-                } catch (WrongArgumentException e){
-                    outputManager.print(e.toString());
-                } catch (InterruptException e){
-                    outputManager.print("Ввод данных остановлен.");
-                } catch (NoSuchCommandException e){
-                    outputManager.print("Нет такой команды в доступных.");
-                } catch (RecursionException e) {
-                    outputManager.print("Рекурсия в исполняемом файле.");
-                } catch (FileException e){
-                    outputManager.print(e.getMessage());
-                }
-                catch (ConnectionsFallsExcetion e){
-                    outputManager.print("Произошел разрыв соединения с сервером.");
-                    break;
-                }
-                catch (RuntimeException e){
-                    outputManager.print(e);
-//                    clientRequestManager.makeRequest(new DisconnectionRequest());
-                    receiver.exit(null);
-                    throw e;
-                }
-            }
-
+            System.out.println(clientRequestManager);
         }
         catch (UnknownHostException e){
             System.out.println("Адрес сервера не найден");
@@ -108,11 +63,15 @@ public class ClientApp {
             System.out.println("Ошибка при чтении данных");
             System.out.println(e);
             System.out.println(Arrays.toString(e.getStackTrace()));
+//            System.out.println("main catch io");
         }
         catch(RuntimeException e){
-            System.out.println("Что-то пошло не так в ходе выполнения программы.");
+            System.out.println("Непредвиденная ошибка в ходе выполнения программы.");
+//            System.out.println(e.getMessage());
             System.out.println(e);
-            System.out.println(Arrays.toString(e.getStackTrace()));
+            e.printStackTrace();
+        } finally {
+            System.out.println("Завершение работы.");
         }
     }
 
@@ -214,6 +173,23 @@ public class ClientApp {
             System.out.println("Завершение работы.");
         }
     }
+
+    public static void start2(){
+        Locale.setDefault(new Locale("ru"));
+
+        try {
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                 UnsupportedLookAndFeelException e) {
+            throw new RuntimeException(e);
+        }
+
+//        ResourceBundle bundle = ResourceBundle.getBundle("gui");
+        ManagersContainer managers = new ManagersContainer();
+
+        var app = new AppStart(managers);
+        app.setVisible(true);
+//        System.exit(0);
+    }
 }
 
-// execute_script C:\Users\timof\IdeaProjects\prog-lab7\client\src\data\script.txt
