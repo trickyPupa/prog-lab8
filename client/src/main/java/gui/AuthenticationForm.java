@@ -1,6 +1,9 @@
 package gui;
 
+import builders.AuthUser;
 import client.ManagersContainer;
+import common.abstractions.AbstractAuthenticationReceiver;
+import common.abstractions.AbstractReceiver;
 import common.commands.abstractions.Command;
 import common.commands.implementations.AuthCommand;
 import common.utils.Funcs;
@@ -9,6 +12,7 @@ import network.UserAuthResponse;
 import network.UserRegisterRequest;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -16,7 +20,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class AuthenticationForm{
+public class AuthenticationForm {
     private JTextField loginField;
     private JPasswordField passwordField;
     private JPanel mainPanel;
@@ -29,9 +33,32 @@ public class AuthenticationForm{
     private JLabel pwdLabel;
 
     protected ManagersContainer managers;
+    private GuiAuthenticationReceiver authReceiver;
 
     private ResourceBundle curBundle;
     protected Boolean isOk = false;
+
+    public class GuiAuthenticationReceiver extends AbstractAuthenticationReceiver{
+
+        public GuiAuthenticationReceiver(AbstractReceiver receiver) {
+            super(receiver);
+        }
+
+        @Override
+        public void authUser(Object[] args) {
+
+        }
+
+        @Override
+        public void registerUser(Object[] args) {
+
+        }
+
+        @Override
+        public void logOut(Object[] args) {
+
+        }
+    }
 
     public AuthenticationForm(ManagersContainer managers) {
         this.managers = managers;
@@ -70,7 +97,7 @@ public class AuthenticationForm{
         initText();
     }
 
-    public JPanel getPanel(){
+    public JPanel getPanel() {
         return mainPanel;
     }
 
@@ -78,10 +105,12 @@ public class AuthenticationForm{
         String login = loginField.getText();
         String password = Arrays.toString(passwordField.getPassword());
 
+        var user = AuthUser.getUser(login, password, managers.getRequestManager());
+
         Command currentCommand = new AuthCommand(new Object[]{});
         currentCommand.setArgs(Funcs.concatObjects(new Object[] {currentCommand}, currentCommand.getArgs()));
 
-        currentCommand.execute(managers.getReceiver());
+        currentCommand.execute(authReceiver);
 
         // проверка пользователя на сервере
         managers.getRequestManager().makeRequest(new UserAuthRequest(currentCommand));
@@ -119,4 +148,5 @@ public class AuthenticationForm{
     private void next(){
 
     }
+
 }

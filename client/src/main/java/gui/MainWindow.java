@@ -5,15 +5,16 @@ import common.commands.abstractions.Command;
 import common.commands.implementations.ShowCommand;
 import common.model.entities.Movie;
 import network.CommandRequest;
+import network.GetDataRequest;
+import network.GetDataResponse;
 import network.Response;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
@@ -34,6 +35,7 @@ public class MainWindow extends JFrame {
     private ManagersContainer managers;
     private ResourceBundle curBundle;
     private ArrayList<Movie> data;
+    private Receiver rec;
 
     protected class Receiver {
         ;
@@ -42,10 +44,13 @@ public class MainWindow extends JFrame {
     public MainWindow(ManagersContainer managersContainer) {
         this.managers = managersContainer;
         curBundle = ResourceBundle.getBundle("gui", managers.getCurrentLocale());
+        rec = new Receiver();
 
         setName("movie app");
         initData();
         initText();
+
+
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
@@ -53,6 +58,32 @@ public class MainWindow extends JFrame {
         setLocationRelativeTo(null);
 
         authentication();
+
+        // создание нового фильма
+        createButton.addActionListener(e -> create());
+        // изменение выделенного фильма
+        editButton.addActionListener(e -> edit());
+        // удаление выделенного фильма
+        deleteButton.addActionListener(e -> deleteMovie());
+        // область визуализации
+        visualizeButton.addActionListener(e -> graphicsArea());
+        // показать команды
+        commandsButton.addActionListener(e -> showCommands());
+    }
+
+    private void showCommands() {
+    }
+
+    private void graphicsArea() {
+    }
+
+    private void deleteMovie() {
+    }
+
+    private void edit() {
+    }
+
+    private void create() {
     }
 
     protected void authentication(){
@@ -116,10 +147,9 @@ public class MainWindow extends JFrame {
     }
 
     private void loadData() {
-        /*var requestManager = managers.getRequestManager();
-        // сделать запрос
-        // GetDataRequest GetDataResponse
-        var getDataRequest = new CommandRequest(new ShowCommand(new Object[]{}), new ArrayList<>());
+        var requestManager = managers.getRequestManager();
+        // запрос на получение коллекции фильмов
+        var getDataRequest = new GetDataRequest();
         requestManager.makeRequest(getDataRequest);
         Response response;
         try {
@@ -127,10 +157,10 @@ public class MainWindow extends JFrame {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        data = (Response) response.getData();*/
+        data = new ArrayList<>(List.of(((GetDataResponse) response).getData()));
 
-        data = new ArrayList<>();
-        data.add(new Movie());
+//        data = new ArrayList<>();
+//        data.add(new Movie());
     }
 
     private void initText(){
@@ -148,97 +178,4 @@ public class MainWindow extends JFrame {
         managers.setCurrentLocale(locale);
         initText();
     }
-
-    /*public void start() {
-        IOutputManager outputManager = new OutputManager();
-        AbstractReceiver clientReceiver = new ClientReceiver(inputManager, outputManager);
-
-        AbstractClientRequestManager clientRequestManager = new ClientRequestManager(HOST_NAME, PORT);
-        AbstractAuthenticationReceiver receiver = new ClientAuthenticationReceiver(clientReceiver, clientRequestManager);
-
-        ClientCommandHandler handler = new ClientCommandHandler(inputManager, outputManager, clientRequestManager,
-                receiver);
-
-        // соединение с сервером
-        clientRequestManager.makeRequest(new ConnectionRequest());
-        var answer = (ConnectionResponse) clientRequestManager.getResponse();
-        outputManager.print(answer.getMessage());
-
-        if (!answer.isSuccess()) {
-            outputManager.print("Попробуйте позже. Завершение работы...");
-            System.exit(0);
-        }
-        handler.setCommands(answer.getCommandList());
-        outputManager.print("Начало работы.");
-
-        // бесполезно
-            *//*{ // отключение от сервера при экстренном завершении программы
-                class MyHook extends Thread {
-                    private AbstractClientRequestManager crm;
-
-                    public MyHook(AbstractClientRequestManager crm) {
-                        super();
-                        this.crm = crm;
-                    }
-
-                    @Override
-                    public void run() {
-                        if (crm != null)
-                            crm.makeRequest(new DisconnectionRequest());
-                    }
-                }
-
-                Runtime.getRuntime().addShutdownHook(new MyHook(clientRequestManager));
-            }*//*
-
-        // основной блок выполнения команд
-        while (true) {
-            try {
-                handler.nextCommand();
-
-            } catch (WrongArgumentException e) {
-                outputManager.print(e.toString());
-            } catch (InterruptException e) {
-                outputManager.print("Ввод данных остановлен.");
-            } catch (NoSuchCommandException e) {
-                outputManager.print("Нет такой команды в доступных.");
-            } catch (RecursionException e) {
-                outputManager.print("Рекурсия в исполняемом файле.");
-            } catch (FileException e) {
-                outputManager.print(e.getMessage());
-            } catch (ConnectionsFallsExcetion e) {
-                outputManager.print("Произошел разрыв соединения с сервером.");
-                break;
-            } catch (RuntimeException e) {
-                System.out.println("Непредвиденная ошибка в ходе выполнения программы.");
-                outputManager.print(e);
-                outputManager.print(Arrays.toString(e.getStackTrace()));
-//                    System.out.println("main catch runtime");
-
-//                    clientRequestManager.makeRequest(new DisconnectionRequest());
-                receiver.exit(null);
-                throw e;
-            }
-        }
-    *//*catch(UnknownHostException e){
-        System.out.println("Адрес сервера не найден");
-    }
-    catch(PortUnreachableException e){
-        System.out.println("Невозможно подключиться к заданному порту");
-    }
-    catch(IOException e){
-        System.out.println("Ошибка при чтении данных");
-        System.out.println(e);
-        System.out.println(Arrays.toString(e.getStackTrace()));
-//            System.out.println("main catch io");
-    }
-    catch(RuntimeException e){
-        System.out.println("Непредвиденная ошибка в ходе выполнения программы.");
-//            System.out.println(e.getMessage());
-        System.out.println(e);
-        e.printStackTrace();
-    } finally{
-        System.out.println("Завершение работы.");
-    }*//*
-    }*/
 }

@@ -93,7 +93,6 @@ public class AuthUser {
             var response = (LoginCheckResponse) requestManager.getResponse();
 
             if (!response.isLoginExists()){
-//                output.print("Пользователь с таким логином не существует. Зарегистрируйте нового пользователя или введите существующий логин.");
                 return null;
             }
             String salt = response.getSalt();

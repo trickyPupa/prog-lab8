@@ -99,8 +99,7 @@ public class AppStart extends JDialog {
                 host_name = host;
 
             runApp(port, host_name);
-        }
-        catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             warnings.setText(curBundle.getString("app_start_wrong_port"));
         }
     }
@@ -120,4 +119,5 @@ public class AppStart extends JDialog {
         });
         dispose();
     }
+
 }
