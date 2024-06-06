@@ -1,11 +1,14 @@
 package gui;
 
 import client.ClientRequestManager;
-import client.ManagersContainer;
+import network.ConnectionRequest;
+import network.ConnectionResponse;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -33,7 +36,7 @@ public class AppStart extends JDialog {
         getRootPane().setDefaultButton(submitButton);
 
         setResizable(false);
-        setMaximumSize(new Dimension(200, 500));
+        setMaximumSize(new Dimension(700, 500));
         setLocation(700, 300);
         setTitle("App Start");
 
@@ -63,8 +66,6 @@ public class AppStart extends JDialog {
                 dispose();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-
     }
 
     private void initText() {
@@ -75,7 +76,7 @@ public class AppStart extends JDialog {
         submitButton.setText(curBundle.getString("app_start_ok_button"));
         exitButton.setText(curBundle.getString("app_start_exit_button"));
 
-        if (!warnings.getText().isEmpty()){
+        if (!warnings.getText().isEmpty()) {
             warnings.setText(curBundle.getString("app_start_warnings"));
         }
     }
@@ -105,17 +106,24 @@ public class AppStart extends JDialog {
     }
 
     private void runApp(int port, String host) {
-        try{
+        try {
             var requestManager = new ClientRequestManager(host, port);
             managers.setRequestManager(requestManager);
-        } catch (UnknownHostException e) {
+
+            managers.getRequestManager().makeRequest(new ConnectionRequest());
+            ConnectionResponse answer = (ConnectionResponse) managers.getRequestManager().getResponse();
+
+            System.out.println(answer.getMessage());
+        } catch (UnknownHostException | PortUnreachableException e) {
             warnings.setText(curBundle.getString("app_start_connection_error"));
             return;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         SwingUtilities.invokeLater(() -> {
             MainWindow mw = new MainWindow(managers);
-            mw.setVisible(true);
+//            mw.setVisible(true);
         });
         dispose();
     }

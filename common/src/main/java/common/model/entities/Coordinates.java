@@ -10,6 +10,11 @@ import static java.lang.Math.sqrt;
 import static common.utils.Funcs.*;
 
 public class Coordinates implements Checkable, Comparable<Coordinates> {
+    public static final int X_MAX_VALUE = Integer.MAX_VALUE;
+    public static final long Y_MAX_VALUE = 155;
+    public static final int X_MIN_VALUE = -878;
+    public static final long Y_MIN_VALUE = Long.MIN_VALUE;
+
     private int x;  // > -879
     private long y;  // <= 155
 

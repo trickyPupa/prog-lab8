@@ -1,22 +1,18 @@
 import client.*;
 import common.OutputManager;
 import common.abstractions.*;
-import common.commands.implementations.AuthCommand;
 import common.exceptions.*;
 import exceptions.ConnectionsFallsExcetion;
 import gui.AppStart;
+import gui.ManagersContainer;
 import network.ConnectionRequest;
 import network.ConnectionResponse;
-import network.DisconnectionRequest;
-import network.UserAuthRequest;
 
 import javax.swing.*;
 import java.io.*;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
 import java.util.*;
-
-import static common.utils.Funcs.isInt;
 
 // вариант 765445678
 public class ClientApp {

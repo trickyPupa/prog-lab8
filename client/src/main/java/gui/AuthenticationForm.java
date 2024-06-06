@@ -1,15 +1,15 @@
 package gui;
 
 import builders.AuthUser;
-import client.ManagersContainer;
 import common.abstractions.AbstractAuthenticationReceiver;
 import common.abstractions.AbstractReceiver;
 import common.commands.abstractions.Command;
 import common.commands.implementations.AuthCommand;
+import common.user.Session;
+import common.user.User;
 import common.utils.Funcs;
 import network.UserAuthRequest;
 import network.UserAuthResponse;
-import network.UserRegisterRequest;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class AuthenticationForm {
+public class AuthenticationForm extends JDialog {
     private JTextField loginField;
     private JPasswordField passwordField;
     private JPanel mainPanel;
@@ -38,7 +38,7 @@ public class AuthenticationForm {
     private ResourceBundle curBundle;
     protected Boolean isOk = false;
 
-    public class GuiAuthenticationReceiver extends AbstractAuthenticationReceiver{
+    public class GuiAuthenticationReceiver extends AbstractAuthenticationReceiver {
 
         public GuiAuthenticationReceiver(AbstractReceiver receiver) {
             super(receiver);
@@ -60,17 +60,25 @@ public class AuthenticationForm {
         }
     }
 
-    public AuthenticationForm(ManagersContainer managers) {
+    public AuthenticationForm(ManagersContainer managers, JFrame parent) {
+        super(parent, true);
         this.managers = managers;
         curBundle = ResourceBundle.getBundle("gui", managers.getCurrentLocale());
+
+        setContentPane(mainPanel);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        pack();
+        setSize(700, 700);
+        setLocationRelativeTo(null);
+        setTitle("authForm");
+
 
         submitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     authorize();
-                }
-                catch (RuntimeException err){
+                } catch (RuntimeException err) {
                     warningsLabel.setText(curBundle.getString("auth_error") + err);
                 }
             }
@@ -80,7 +88,7 @@ public class AuthenticationForm {
         initText();
     }
 
-    private void initText(){
+    private void initText() {
         infoLabel.setText(curBundle.getString("auth_info_label"));
         loginLabel.setText(curBundle.getString("auth_login_label"));
         pwdLabel.setText(curBundle.getString("auth_pwd_label"));
@@ -91,7 +99,7 @@ public class AuthenticationForm {
 //        pictureLabel.setIcon();
     }
 
-    protected void switchLocale(Locale locale){
+    protected void switchLocale(Locale locale) {
         curBundle = ResourceBundle.getBundle("gui", locale);
         managers.setCurrentLocale(locale);
         initText();
@@ -101,14 +109,16 @@ public class AuthenticationForm {
         return mainPanel;
     }
 
-    protected void authorize(){
+    protected void authorize() {
         String login = loginField.getText();
         String password = Arrays.toString(passwordField.getPassword());
 
-        var user = AuthUser.getUser(login, password, managers.getRequestManager());
+        var pair = AuthUser.getUser(login, password, managers.getRequestManager());
+        User user = pair.getFirst();
+        String salt = pair.getSecond();
 
         Command currentCommand = new AuthCommand(new Object[]{});
-        currentCommand.setArgs(Funcs.concatObjects(new Object[] {currentCommand}, currentCommand.getArgs()));
+        currentCommand.setArgs(Funcs.concatObjects(new Object[]{currentCommand}, currentCommand.getArgs()));
 
         currentCommand.execute(authReceiver);
 
@@ -126,27 +136,28 @@ public class AuthenticationForm {
         String result = response.getMessage();
         print(result);
 
-        if (response.getStatus()){
+        if (response.getStatus()) {
 //            history = response.getHistory();
             next();
             isOk = true;
-            isOk.notify();
-            return;
+            managers.setSession(new Session(user, salt));
+//            isOk.notify();
+            notify();
+            dispose();
         }
-//        print("Попробуйте еще раз.");
+
         warningsLabel.setText(curBundle.getString("auth_auth_problem"));
     }
 
-    protected void register(){
+    protected void register() {
         ;
     }
 
-    protected void print(String message){
+    protected void print(String message) {
         warningsLabel.setText(message);
     }
 
-    private void next(){
-
+    private void next() {
+        ;
     }
-
 }

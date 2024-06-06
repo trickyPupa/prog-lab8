@@ -1,12 +1,16 @@
-package client;
+package gui;
+
+import client.ClientRequestManager;
+import client.GuiClientReceiver;
+import common.user.Session;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 public class ManagersContainer {
     protected ClientRequestManager requestManager;
     protected GuiClientReceiver receiver;
     protected Locale currentLocale = Locale.getDefault();
+    protected Session session;
 
     public ManagersContainer() {}
 
@@ -32,5 +36,13 @@ public class ManagersContainer {
 
     public void setCurrentLocale(Locale currentLocale) {
         this.currentLocale = currentLocale;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
     }
 }

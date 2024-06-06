@@ -1,20 +1,17 @@
 package gui;
 
-import client.*;
-import common.commands.abstractions.Command;
-import common.commands.implementations.ShowCommand;
 import common.model.entities.Movie;
-import network.CommandRequest;
 import network.GetDataRequest;
 import network.GetDataResponse;
 import network.Response;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
@@ -46,18 +43,15 @@ public class MainWindow extends JFrame {
         curBundle = ResourceBundle.getBundle("gui", managers.getCurrentLocale());
         rec = new Receiver();
 
+        authentication();
+
         setName("movie app");
-        initData();
-        initText();
-
-
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
         setSize(700, 700);
         setLocationRelativeTo(null);
-
-        authentication();
+        setContentPane(mainPanel);
 
         // создание нового фильма
         createButton.addActionListener(e -> create());
@@ -69,6 +63,9 @@ public class MainWindow extends JFrame {
         visualizeButton.addActionListener(e -> graphicsArea());
         // показать команды
         commandsButton.addActionListener(e -> showCommands());
+
+        initData();
+        initText();
     }
 
     private void showCommands() {
@@ -84,25 +81,56 @@ public class MainWindow extends JFrame {
     }
 
     private void create() {
-    }
+        var dialog = new CreationDialog(this, curBundle);
+        dialog.setVisible(true);
 
-    protected void authentication(){
-        var authForm = new AuthenticationForm(managers);
-
-        setContentPane(authForm.getPanel());
-        setVisible(true);
-
+        /*Movie result = dialog.getResult();
         while(true){
             try {
-                authForm.isOk.wait();
+                result.wait();
+                break;
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            if (authForm.isOk){
-                setContentPane(mainPanel);
-                break;
-            }
+        }*/
+        Movie result = dialog.getResult();
+
+        if (result != null) {
+            data.add(result);
+            // отправить запрос на сервер
+
         }
+    }
+
+    protected void authentication() {
+        var authForm = new AuthenticationForm(managers, this);
+        authForm.setVisible(true);
+
+        if (authForm.isOk) {
+//            setContentPane(mainPanel);
+            setVisible(true);
+        } else {
+            System.out.println(-1);
+            close();
+        }
+
+        /*synchronized (authForm.isOk) {
+            while (true) {
+                try {
+                    authForm.wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                if (authForm.isOk) {
+                    setContentPane(mainPanel);
+                    setVisible(true);
+
+                    break;
+                } else {
+    //                System.out.println(-1);
+                }
+            }
+        }*/
     }
 
     protected static class MovieTableModel extends AbstractTableModel {
@@ -140,7 +168,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void initData(){
+    private void initData() {
         var tableModel = new MovieTableModel(data);
 
         table.setModel(tableModel);
@@ -158,13 +186,10 @@ public class MainWindow extends JFrame {
             throw new RuntimeException(e);
         }
         data = new ArrayList<>(List.of(((GetDataResponse) response).getData()));
-
-//        data = new ArrayList<>();
-//        data.add(new Movie());
     }
 
-    private void initText(){
-        info.setText(curBundle.getString("main_info_label"));
+    private void initText() {
+        info.setText(curBundle.getString("main_info_label") + " " + managers.getSession().getUser().getLogin());
 
         createButton.setText(curBundle.getString("main_create_button"));
         editButton.setText(curBundle.getString("main_edit_button"));
@@ -173,9 +198,14 @@ public class MainWindow extends JFrame {
         visualizeButton.setText(curBundle.getString("main_vis_button"));
     }
 
-    protected void switchLocale(Locale locale){
+    protected void switchLocale(Locale locale) {
         curBundle = ResourceBundle.getBundle("gui", locale);
         managers.setCurrentLocale(locale);
         initText();
+    }
+
+    private void close() {
+        dispose();
+        System.exit(0);
     }
 }

@@ -44,6 +44,16 @@ public class Movie implements Comparable<Movie>, Checkable {
         ;
     }
 
+    public Movie(String name, int oscarsCount, Integer goldenPalmCount, long length, Coordinates coordinates, MpaaRating mpaaRating, Person director) {
+        this.name = name;
+        this.oscarsCount = oscarsCount;
+        this.goldenPalmCount = goldenPalmCount;
+        this.length = length;
+        this.coordinates = coordinates;
+        this.mpaaRating = mpaaRating;
+        this.director = director;
+    }
+
     /**
      * Обновляет значения фильма, не меняя его Id
      * @param newValue объект, значения которого требуется присвоить.

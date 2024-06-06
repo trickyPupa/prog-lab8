@@ -29,6 +29,15 @@ public class Person implements Comparable<Person>, Checkable {
 
     public Person() {}
 
+    public Person(String name, Date birthday, EyeColor eyeColor, HairColor hairColor, Country nationality, Location location) {
+        this.name = name;
+        this.birthday = birthday;
+        this.eyeColor = eyeColor;
+        this.hairColor = hairColor;
+        this.nationality = nationality;
+        this.location = location;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
