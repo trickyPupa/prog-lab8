@@ -4,7 +4,6 @@ import common.model.enums.MpaaRating;
 import common.exceptions.InterruptException;
 import common.abstractions.IInputManager;
 import common.abstractions.IOutputManager;
-import common.user.User;
 
 import java.io.IOException;
 import java.time.LocalDate;

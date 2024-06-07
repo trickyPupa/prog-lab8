@@ -1,12 +1,8 @@
 package network;
 
 import common.commands.abstractions.AbstractCommand;
-import common.commands.abstractions.Command;
 
-import javax.swing.*;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 public class ConnectionResponse extends Response{
     protected boolean success;

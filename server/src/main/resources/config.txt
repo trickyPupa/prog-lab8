@@ -1,5 +1,13 @@
+# гелиус
+port : 8005
+host : localhost
+user : s408966
+password : sr3vdKx68hNmiZ2r
+database : studs
+
+# не гелиус
 port : 5432
-host : 127.0.0.1
+host : localhost
 user : postgres
-password : qwer1234
+password : qwer123
 database : prog

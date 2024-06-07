@@ -3,7 +3,6 @@ package managers;
 import common.abstractions.AbstractReceiver;
 import common.abstractions.IOutputManager;
 import common.commands.abstractions.AbstractCommand;
-import common.commands.abstractions.Command;
 import common.model.entities.Movie;
 import common.exceptions.WrongArgumentException;
 import common.user.User;

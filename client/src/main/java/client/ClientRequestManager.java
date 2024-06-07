@@ -1,6 +1,5 @@
 package client;
 
-import common.model.entities.Movie;
 import network.ConnectionResponse;
 import network.Request;
 import network.Response;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ClientRequestManager extends AbstractClientRequestManager {

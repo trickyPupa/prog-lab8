@@ -11,10 +11,7 @@ import common.model.enums.MpaaRating;
 import gui.utils.NumberFilter;
 
 import javax.swing.*;
-import javax.swing.plaf.FontUIResource;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.StyleContext;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.Date;
 import java.util.Locale;

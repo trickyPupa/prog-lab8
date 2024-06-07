@@ -1,7 +1,5 @@
 package commands;
 
-import common.abstractions.AbstractReceiver;
-import common.commands.abstractions.AbstractCommand;
 import common.commands.abstractions.Command;
 import managers.ServerControlReceiver;
 

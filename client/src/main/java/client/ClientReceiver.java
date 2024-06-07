@@ -11,7 +11,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class ClientReceiver extends AbstractReceiver {

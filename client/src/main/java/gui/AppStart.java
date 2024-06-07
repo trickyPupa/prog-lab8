@@ -116,6 +116,7 @@ public class AppStart extends JDialog {
             System.out.println(answer.getMessage());
         } catch (UnknownHostException | PortUnreachableException e) {
             warnings.setText(curBundle.getString("app_start_connection_error"));
+            System.out.println(e);
             return;
         } catch (IOException e) {
             throw new RuntimeException(e);

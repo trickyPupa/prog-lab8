@@ -79,7 +79,7 @@
     </dependency>
     <dependency>
       <groupId>itmo.labortimofey</groupId>
-      <artifactId>prog-lab7.common</artifactId>
+      <artifactId>prog-lab8.common</artifactId>
       <version>1.2</version>
     </dependency>
     <dependency>

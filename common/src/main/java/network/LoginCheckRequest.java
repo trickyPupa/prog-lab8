@@ -1,7 +1,5 @@
 package network;
 
-import common.user.User;
-
 public class LoginCheckRequest extends Request {
     private String login;
 

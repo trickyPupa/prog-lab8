@@ -2,8 +2,6 @@ package common.abstractions;
 
 import common.commands.abstractions.AbstractCommand;
 
-import java.util.Arrays;
-
 import static common.utils.Funcs.concatObjects;
 
 public abstract class AbstractReceiver {

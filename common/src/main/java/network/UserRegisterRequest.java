@@ -2,8 +2,6 @@ package network;
 
 import common.commands.abstractions.Command;
 
-import java.util.Collection;
-
 public class UserRegisterRequest extends UserAuthRequest {
     String salt;
 

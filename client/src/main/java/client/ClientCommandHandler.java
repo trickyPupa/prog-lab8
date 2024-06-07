@@ -1,18 +1,14 @@
 package client;
 
-import common.exceptions.WrongArgumentException;
-import common.user.Session;
 import common.utils.Funcs;
 import common.abstractions.*;
 import common.commands.abstractions.AbstractCommand;
 import common.exceptions.NoSuchCommandException;
 import common.commands.abstractions.Command;
 import common.commands.implementations.*;
-import exceptions.ConnectionsFallsExcetion;
 import network.*;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.*;
 import java.util.function.Function;
 

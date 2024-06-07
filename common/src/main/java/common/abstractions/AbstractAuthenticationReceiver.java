@@ -1,7 +1,6 @@
 package common.abstractions;
 
 import common.user.Session;
-import common.user.User;
 
 public abstract class AbstractAuthenticationReceiver extends AbstractReceiver {
     private AbstractReceiver receiver;
