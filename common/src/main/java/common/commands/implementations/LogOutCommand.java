@@ -1,6 +1,6 @@
 package common.commands.implementations;
 
-import common.abstractions.AbstractAuthenticationReceiver;
+import common.abstractions.AbstractAuthInterface;
 import common.abstractions.AbstractReceiver;
 import common.commands.abstractions.AbstractCommand;
 import common.commands.abstractions.Command;
@@ -14,11 +14,11 @@ public class LogOutCommand extends AbstractCommand {
 
     @Override
     public void execute(String[] s, AbstractReceiver rec) {
-        ((AbstractAuthenticationReceiver) rec).logOut(s);
+        ((AbstractAuthInterface) rec).logOut(s);
     }
     @Override
     public void execute(AbstractReceiver rec) {
-        ((AbstractAuthenticationReceiver) rec).logOut(getArgs());
+        ((AbstractAuthInterface) rec).logOut(getArgs());
     }
     @Override
     public Function<Object[], Command> getConstructor() {

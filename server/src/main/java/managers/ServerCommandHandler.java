@@ -1,7 +1,9 @@
 package managers;
 
-import commands.*;
-import common.abstractions.*;
+import commands.AbstractServerCommand;
+import commands.StopServerCommand;
+import common.abstractions.AbstractReceiver;
+import common.abstractions.Handler;
 import common.commands.abstractions.AbstractCommand;
 import common.commands.abstractions.Command;
 import common.commands.implementations.*;
@@ -24,7 +26,6 @@ public class ServerCommandHandler implements Handler{
     // класс с всеми нужными менеджерами
     public class ShellValuables {
         private ServerOutputManager serverOutputManager;
-//        private final HistoryManager historyManager;
         private DataBaseManager dataBaseManager;
         private DataBaseCollectionManager dbCollectionManager;
         public final Logger logger;

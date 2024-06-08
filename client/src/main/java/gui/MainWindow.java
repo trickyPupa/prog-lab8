@@ -9,7 +9,6 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
@@ -167,6 +166,7 @@ public class MainWindow extends JFrame {
     }
 
     private void initData() {
+        loadData();
         var tableModel = new MovieTableModel(data);
 
         table.setModel(tableModel);

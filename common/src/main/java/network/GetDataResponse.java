@@ -8,8 +8,9 @@ import java.util.Collection;
 public class GetDataResponse extends Response {
     protected Movie[] movies;
 
-    public GetDataResponse(String msg, Collection<Command> history) {
+    public GetDataResponse(String msg, Collection<Command> history, Movie[] movies) {
         super(msg, history);
+        this.movies = movies;
     }
 
     public Movie[] getData(){

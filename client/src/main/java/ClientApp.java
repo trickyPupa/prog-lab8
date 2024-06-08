@@ -1,6 +1,9 @@
 import client.*;
 import common.OutputManager;
-import common.abstractions.*;
+import common.abstractions.AbstractAuthenticationReceiver;
+import common.abstractions.AbstractReceiver;
+import common.abstractions.IInputManager;
+import common.abstractions.IOutputManager;
 import common.exceptions.*;
 import exceptions.ConnectionsFallsExcetion;
 import gui.AppStart;
@@ -9,10 +12,13 @@ import network.ConnectionRequest;
 import network.ConnectionResponse;
 
 import javax.swing.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Locale;
 
 // вариант 765445678
 public class ClientApp {
@@ -172,6 +178,8 @@ public class ClientApp {
 
     public static void start2(){
         Locale.setDefault(new Locale("ru"));
+        Locale[] locales = new Locale[]{new Locale("ru"), new Locale("en", "NZ"),
+                new Locale("be"), new Locale("pl")};
 
         try {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
@@ -181,11 +189,11 @@ public class ClientApp {
         }
 
 //        ResourceBundle bundle = ResourceBundle.getBundle("gui");
-        ManagersContainer managers = new ManagersContainer();
+        ManagersContainer managers = new ManagersContainer(locales);
 
-        var app = new AppStart(managers);
+        var app = new
+                AppStart(managers);
         app.setVisible(true);
 //        System.exit(0);
     }
 }
-

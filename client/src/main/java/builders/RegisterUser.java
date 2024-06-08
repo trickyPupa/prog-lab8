@@ -50,7 +50,6 @@ public class RegisterUser extends AuthUser{
     }
 
     public static Pair<User, String> getUser(IInputManager input, IOutputManager output, AbstractClientRequestManager requestManager){
-
         while(true){
             String login = getLogin(input, output);
             var request = new LoginCheckRequest(login);
@@ -73,6 +72,26 @@ public class RegisterUser extends AuthUser{
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    public static Pair<User, String> getUser(String login, String password, AbstractClientRequestManager requestManager){
+        var request = new LoginCheckRequest(login);
+        requestManager.makeRequest(request);
+
+        try {
+            var response = (LoginCheckResponse) requestManager.getResponse();
+
+            if (response.isLoginExists()){
+                return null;
+            }
+            String salt = response.getSalt();
+
+            String hashedPwd = EncryptionManager.byteArrayToHexString(EncryptionManager.encrypt(password + salt));
+
+            return new Pair<>(new User(login, hashedPwd), salt);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

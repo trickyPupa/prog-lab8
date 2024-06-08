@@ -12,7 +12,11 @@ public class ManagersContainer {
     protected Locale currentLocale = Locale.getDefault();
     protected Session session;
 
-    public ManagersContainer() {}
+    protected final Locale[] enabledLocales;
+
+    public ManagersContainer(Locale[] locales) {
+        enabledLocales = locales;
+    }
 
     public ClientRequestManager getRequestManager() {
         return requestManager;

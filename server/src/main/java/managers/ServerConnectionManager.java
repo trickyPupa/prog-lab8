@@ -4,16 +4,20 @@ import common.commands.abstractions.Command;
 import common.exceptions.InterruptException;
 import common.exceptions.NoSuchCommandException;
 import common.exceptions.WrongArgumentException;
-import common.user.*;
+import common.model.entities.Movie;
+import common.user.EncryptionManager;
+import common.user.User;
 import common.utils.Pair;
-import network.*;
 import exceptions.FinishConnecton;
+import network.*;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.*;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -158,6 +162,14 @@ public class ServerConnectionManager {
                 var response = new UserAuthResponse("", verifying, history);
                 sendResponse(response, clientAddress);
                 logger.info("Отправлен ответ по запросу аутентификации пользователя клиенту ", clientAddress);
+            }
+            // запрос на получение данных
+            else if (clientData instanceof GetDataRequest) {
+                // отправка ответа
+                var response = new GetDataResponse("успешно", null,
+                        handler.vals.getCollectionManager().getCollection().toArray(new Movie[0]));
+                sendResponse(response, clientAddress);
+                logger.info("Отправлен ответ по запросу текущих данных о коллекции", clientAddress);
             }
             // обычный запрос на выполнение команды
             else {

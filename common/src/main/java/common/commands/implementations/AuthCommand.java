@@ -1,7 +1,7 @@
 package common.commands.implementations;
 
+import common.abstractions.AbstractAuthInterface;
 import common.abstractions.AbstractReceiver;
-import common.abstractions.AbstractAuthenticationReceiver;
 import common.commands.abstractions.AbstractCommand;
 import common.commands.abstractions.Command;
 
@@ -14,11 +14,11 @@ public class AuthCommand extends AbstractCommand {
 
     @Override
     public void execute(String[] s, AbstractReceiver rec) {
-        ((AbstractAuthenticationReceiver) rec).authUser(s);
+        ((AbstractAuthInterface) rec).authUser(s);
     }
     @Override
     public void execute(AbstractReceiver rec) {
-        ((AbstractAuthenticationReceiver) rec).authUser(getArgs());
+        ((AbstractAuthInterface) rec).authUser(getArgs());
     }
     @Override
     public Function<Object[], Command> getConstructor() {

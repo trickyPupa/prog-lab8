@@ -2,7 +2,7 @@ package common.abstractions;
 
 import common.user.Session;
 
-public abstract class AbstractAuthenticationReceiver extends AbstractReceiver {
+public abstract class AbstractAuthenticationReceiver extends AbstractReceiver implements AbstractAuthInterface{
     private AbstractReceiver receiver;
     private Session currentSession;
 
@@ -18,12 +18,6 @@ public abstract class AbstractAuthenticationReceiver extends AbstractReceiver {
     public Session getCurrentSession() {
         return currentSession;
     }
-
-    public abstract void authUser(Object[] args);
-
-    public abstract void registerUser(Object[] args);
-
-    public abstract void logOut(Object[] args);
 
     @Override
     public void update(Object[] args) {
