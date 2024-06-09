@@ -166,6 +166,7 @@ public class ServerConnectionManager {
             // запрос на получение данных
             else if (clientData instanceof GetDataRequest) {
                 // отправка ответа
+                // сделать историю
                 var response = new GetDataResponse("успешно", null,
                         handler.vals.getCollectionManager().getCollection().toArray(new Movie[0]));
                 sendResponse(response, clientAddress);
@@ -276,17 +277,6 @@ public class ServerConnectionManager {
 
                 for (int i = 0; i < chunks.length; i++) {
                     var chunk = chunks[i];
-
-                    // старая версия
-                    /*if (i == chunks.length - 1) {
-                        DatagramPacket dp = new DatagramPacket(concatBytes(chunk, new byte[]{1}), PACKET_SIZE, destination);
-                        socket.send(dp);
-    //                    logger.info("Последний чанк размером " + chunk.length + " отправлен");
-                    } else {
-                        var dp = new DatagramPacket(concatBytes(chunk, new byte[]{0}), PACKET_SIZE, destination);
-                        socket.send(dp);
-    //                    logger.info("Чанк размером " + chunk.length + " отправлен");
-                    }*/
 
                     // новая версия с количеством чанков и текущим чанком по счету
                     DatagramPacket dp = new DatagramPacket(concatBytes(chunk, new byte[]{(byte) i, (byte) (chunks.length - 1)}),

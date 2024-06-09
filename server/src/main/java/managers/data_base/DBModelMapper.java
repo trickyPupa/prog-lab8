@@ -1,11 +1,16 @@
 package managers.data_base;
 
-import common.model.enums.*;
-import common.model.entities.*;
+import common.model.entities.Coordinates;
+import common.model.entities.Location;
+import common.model.entities.Movie;
+import common.model.entities.Person;
+import common.model.enums.Country;
+import common.model.enums.EyeColor;
+import common.model.enums.HairColor;
+import common.model.enums.MpaaRating;
 import org.postgresql.util.PGobject;
 
 import java.sql.*;
-import java.time.ZoneId;
 
 public class DBModelMapper {
     public static Movie getMovieFromDB(ResultSet record, ResultSet person, String userLogin) throws SQLException {
@@ -35,7 +40,7 @@ public class DBModelMapper {
         Person result = new Person();
 
         result.setName(person.getString("name"));
-        result.setBirthday(person.getDate("birthDate"));
+        result.setBirthday(person.getDate("birthDate").toLocalDate());
         result.setEyeColor(EyeColor.valueOf(person.getString("eyeColor")));
         result.setHairColor(HairColor.valueOf(person.getString("hairColor")));
         result.setNationality(Country.valueOf(person.getString("nationality")));
@@ -65,7 +70,7 @@ public class DBModelMapper {
 
     public static void setPersonData(Person person, PreparedStatement statement) throws SQLException {
         statement.setString(1, person.getName());
-        statement.setDate(2, Date.valueOf(person.getBirthday().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        statement.setDate(2, Date.valueOf(person.getBirthday()));
         statement.setObject(3, person.getEyeColor(), Types.OTHER);
         statement.setObject(4, person.getHairColor(), Types.OTHER);
         statement.setObject(5, person.getNationality(), Types.OTHER);

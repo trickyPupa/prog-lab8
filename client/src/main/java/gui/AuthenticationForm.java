@@ -233,7 +233,7 @@ public class AuthenticationForm extends JDialog {
         print(result);
 
         if (response.getStatus()) {
-//            history = response.getHistory();
+            managers.history = response.getHistory();
             next();
             isOk = true;
 //            notify();

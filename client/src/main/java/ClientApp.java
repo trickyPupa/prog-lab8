@@ -191,9 +191,10 @@ public class ClientApp {
 //        ResourceBundle bundle = ResourceBundle.getBundle("gui");
         ManagersContainer managers = new ManagersContainer(locales);
 
-        var app = new
-                AppStart(managers);
+        var app = new AppStart(managers);
         app.setVisible(true);
 //        System.exit(0);
     }
 }
+
+// abob - 1234

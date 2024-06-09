@@ -2,8 +2,10 @@ package gui;
 
 import client.ClientRequestManager;
 import client.GuiClientReceiver;
+import common.commands.abstractions.Command;
 import common.user.Session;
 
+import java.util.Collection;
 import java.util.Locale;
 
 public class ManagersContainer {
@@ -11,6 +13,7 @@ public class ManagersContainer {
     protected GuiClientReceiver receiver;
     protected Locale currentLocale = Locale.getDefault();
     protected Session session;
+    protected Collection<Command> history;
 
     protected final Locale[] enabledLocales;
 
@@ -48,5 +51,9 @@ public class ManagersContainer {
 
     public void setSession(Session session) {
         this.session = session;
+    }
+
+    public Collection<Command> getHistory() {
+        return history;
     }
 }

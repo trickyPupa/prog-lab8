@@ -8,8 +8,11 @@ import common.model.enums.EyeColor;
 import common.model.enums.HairColor;
 import common.model.enums.MpaaRating;
 import exceptions.DataBaseConnectionException;
+import managers.DataBaseCollectionManager;
+import managers.ServerCommandHandler;
+import managers.ServerConnectionManager;
+import managers.ServerOutputManager;
 import managers.data_base.PostgreDataBaseManager;
-import managers.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,7 +20,6 @@ import java.net.SocketException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Scanner;
 
 public class ServerApp {
@@ -48,7 +50,7 @@ public class ServerApp {
 
             Person person = new Person();
             person.setLocation(new Location(2, 3, 5));
-            person.setBirthday(new Date(100, 10, 30));
+            person.setBirthday(LocalDate.now());
             person.setName("Arthur");
             person.setEyeColor(EyeColor.YELLOW);
             person.setHairColor(HairColor.BLUE);

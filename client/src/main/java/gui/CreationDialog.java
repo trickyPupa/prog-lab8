@@ -15,7 +15,8 @@ import javax.swing.text.AbstractDocument;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -143,7 +144,7 @@ public class CreationDialog extends JDialog {
         MpaaRating mpaa = (MpaaRating) comboBox6.getSelectedItem();
 
         String personName = textField7.getText();
-        Date date = (Date) dateSpinner.getValue();
+        LocalDate date = ((SpinnerDateModel) dateSpinner.getModel()).getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         EyeColor eyeColor = (EyeColor) comboBox9.getSelectedItem();
         HairColor hairColor = (HairColor) comboBox10.getSelectedItem();
         Country country = (Country) comboBox11.getSelectedItem();

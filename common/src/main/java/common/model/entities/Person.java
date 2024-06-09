@@ -1,13 +1,14 @@
 package common.model.entities;
 
-import common.model.enums.*;
-import common.exceptions.InterruptException;
 import common.abstractions.IInputManager;
 import common.abstractions.IOutputManager;
+import common.exceptions.InterruptException;
+import common.model.enums.Country;
+import common.model.enums.EyeColor;
+import common.model.enums.HairColor;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -21,7 +22,7 @@ public class Person implements Comparable<Person>, Checkable {
     private int id = 0;
     private String name; //Поле не может быть null, Строка не может быть пустой
 //    @JsonSerialize(using = FileManager.CustomDateSerializer.class)
-    private Date birthday; //Поле не может быть null
+    private LocalDate birthday; //Поле не может быть null
     private EyeColor eyeColor; //Поле может быть null
     private HairColor hairColor; //Поле не может быть null
     private Country nationality; //Поле не может быть null
@@ -29,7 +30,7 @@ public class Person implements Comparable<Person>, Checkable {
 
     public Person() {}
 
-    public Person(String name, Date birthday, EyeColor eyeColor, HairColor hairColor, Country nationality, Location location) {
+    public Person(String name, LocalDate birthday, EyeColor eyeColor, HairColor hairColor, Country nationality, Location location) {
         this.name = name;
         this.birthday = birthday;
         this.eyeColor = eyeColor;
@@ -42,7 +43,7 @@ public class Person implements Comparable<Person>, Checkable {
         this.name = name;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
     }
 
@@ -74,7 +75,7 @@ public class Person implements Comparable<Person>, Checkable {
         return name;
     }
 
-    public Date getBirthday() {
+    public LocalDate getBirthday() {
         return birthday;
     }
 
@@ -114,7 +115,7 @@ public class Person implements Comparable<Person>, Checkable {
                 int month = Integer.parseInt(temp[1].strip());
                 int year = Integer.parseInt(temp[2].strip());
 
-                elem.setBirthday(new Date(year - 1900, month, day));
+                elem.setBirthday(LocalDate.of(year, month, day));
                 return true;
             }
             return false;
@@ -176,7 +177,7 @@ public class Person implements Comparable<Person>, Checkable {
     @Override
     public String toString() {
         return String.format("%s (%8s), born in %s", " ".repeat(max(maxNameLen - name.length(), 0)) + name,
-                nationality.name(), new SimpleDateFormat("dd.MM.yyyy").format(birthday));
+                nationality.name(), birthday);
     }
 
     @Override
