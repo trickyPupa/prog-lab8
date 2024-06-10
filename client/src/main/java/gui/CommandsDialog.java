@@ -1,5 +1,6 @@
 package gui;
 
+import common.model.entities.Movie;
 import gui.utils.NumberFilter;
 
 import javax.swing.*;
@@ -27,14 +28,16 @@ public class CommandsDialog extends JDialog {
     private JButton historyButton;
 
     private ResourceBundle curBundle;
+    private MainWindow.Receiver receiver;
 
-    public CommandsDialog(JFrame parent, ResourceBundle bundle) {
+    public CommandsDialog(JFrame parent, ResourceBundle bundle, MainWindow.Receiver rec) {
         super(parent, true);
         setContentPane(contentPane);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         getRootPane().setDefaultButton(exitButton);
 
         curBundle = bundle;
+        receiver = rec;
 
         exitButton.addActionListener(e -> dispose());
 
@@ -49,25 +52,36 @@ public class CommandsDialog extends JDialog {
                     System.out.println("Selected file: " + selectedFile.getAbsolutePath());
 
                     // выполнение команды
+
+                    dispose();
                 }
             }
         });
         deleteByGPButton.addActionListener(e -> {
-            ;
+            int gp = Integer.parseInt(deleteByGPField.getText());
+            System.out.println("gp " + gp);
+            rec.removeByGP(gp);
+            dispose();
         });
         deleteByIdButton.addActionListener(e -> {
-            ;
+            int id = Integer.parseInt(deleteByIdField.getText());
+            rec.removeById(id);
+            dispose();
         });
         deleteLowerButton.addActionListener(e -> {
-            ;
+            Movie movie = null;
+            rec.removeLower(movie);
+            dispose();
         });
 
         clearButton.addActionListener(e -> {
-            ;
+            rec.clear();
+            dispose();
         });
 
         historyButton.addActionListener(e -> {
-            ;
+            rec.history();
+            dispose();
         });
 
         setUpComponents();
@@ -111,7 +125,7 @@ public class CommandsDialog extends JDialog {
 
         var frame = new JFrame();
         ResourceBundle bundle = ResourceBundle.getBundle("gui", Locale.getDefault());
-        CommandsDialog mw = new CommandsDialog(frame, bundle);
+        CommandsDialog mw = new CommandsDialog(frame, bundle, null);
         mw.setVisible(true);
         System.exit(0);
     }

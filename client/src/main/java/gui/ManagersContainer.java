@@ -33,7 +33,7 @@ public class ManagersContainer {
         this.receiver = receiver;
     }
 
-    public void setRequestManager(ClientRequestManager requestManager) {
+    protected void setRequestManager(ClientRequestManager requestManager) {
         this.requestManager = requestManager;
     }
 

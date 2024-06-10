@@ -3,8 +3,8 @@ package managers;
 import common.abstractions.AbstractReceiver;
 import common.abstractions.IOutputManager;
 import common.commands.abstractions.AbstractCommand;
-import common.model.entities.Movie;
 import common.exceptions.WrongArgumentException;
+import common.model.entities.Movie;
 import common.user.User;
 import exceptions.FinishConnecton;
 import exceptions.WrongUserException;
@@ -182,11 +182,11 @@ public class ServerCommandReceiver extends AbstractReceiver {
         if (args.length < 3) {
             throw new WrongArgumentException("недостаточно аргументов - remove_all_by_golden_palm_count");
         }
-        if (!isInt((String) args[2])){
+        else if (!isInt(args[2].toString())){
             throw new WrongArgumentException("remove_all_by_golden_palm_count");
         }
 
-        Integer gp_count = Integer.parseInt((String) args[2]);
+        Integer gp_count = Integer.parseInt(args[2].toString());
 
         var collection = shell.getCollectionManager().getCollection();
 
@@ -211,11 +211,11 @@ public class ServerCommandReceiver extends AbstractReceiver {
         if (args.length < 3) {
             throw new WrongArgumentException("недостаточно аргументов - remove_by_id");
         }
-        if (!isInt((String) args[2])){
+        if (!isInt(args[2].toString())){
             throw new WrongArgumentException("remove_by_id");
         }
 
-        int id = Integer.parseInt((String) args[2]);
+        int id = Integer.parseInt(args[2].toString());
 
         var collection = shell.getCollectionManager().getCollection();
 

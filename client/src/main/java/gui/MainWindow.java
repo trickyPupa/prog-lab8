@@ -1,6 +1,7 @@
 package gui;
 
-import common.commands.implementations.AddCommand;
+import common.commands.abstractions.Command;
+import common.commands.implementations.*;
 import common.model.entities.Movie;
 import common.model.entities.Person;
 import common.utils.Funcs;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
 
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
@@ -56,18 +58,66 @@ public class MainWindow extends JFrame {
     private ResourceBundle curBundle;
     private DateTimeFormatter formatter;
     private ArrayList<Movie> data;
-    private Receiver rec;
-
-    /*private void createUIComponents() {
-        loadData();
-
-        var tableModel = new MovieTableModel(data, initColumns(), formatter);
-
-        table = new JTable(tableModel);
-    }*/
+    private Receiver receiver;
 
     protected class Receiver {
-        ;
+        public void executeCommand(Function<Object[], Command> commandFunction, Object[] args){
+            var rm = managers.getRequestManager();
+            var command = commandFunction.apply(args);
+            command.setArgs(Funcs.concatObjects(new Object[]
+                    {command, managers.getSession().getUser()}, command.getArgs()));
+
+            rm.makeRequest(new CommandRequest(command, managers.getHistory()));
+
+            try {
+                Response response = managers.getRequestManager().getResponse();
+                managers.history = response.getHistory();
+
+                System.out.println(response.getMessage());
+
+                loadData();
+
+//                System.out.println(data);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void executeCommand(Function<Object[], Command> commandFunction){
+            executeCommand(commandFunction, new Object[0]);
+        }
+
+        public void clear(){
+            executeCommand(ClearCommand::new);
+        }
+
+        public void removeLower(Movie movie){
+            executeCommand(RemoveLowerCommand::new, new Object[]{movie});
+        }
+
+        public void removeById(int id){
+            executeCommand(RemoveByIdCommand::new, new Object[]{id});
+        }
+
+        public void removeByGP(int gp){
+            executeCommand(RemoveAllByGoldenPalmCountCommand::new, new Object[]{gp});
+        }
+
+        public void history(){
+            StringBuilder res = new StringBuilder();
+            for(Command i : managers.history){
+                res.append(i.getName()).append("\n");
+            }
+            res.append("\n");
+            textArea.setText(String.valueOf(res));
+
+            executeCommand(HistoryCommand::new);
+        }
+
+        public void executeScript(){
+            ;
+        }
     }
 
     public MainWindow(ManagersContainer managersContainer) {
@@ -75,7 +125,7 @@ public class MainWindow extends JFrame {
         curBundle = ResourceBundle.getBundle("gui", managers.getCurrentLocale());
         formatter = DateTimeFormatter.ofPattern(curBundle.getString("date.format"));
 //        switchLocale(managers.getCurrentLocale());
-        rec = new Receiver();
+        receiver = new Receiver();
 
         authentication();
 
@@ -124,7 +174,8 @@ public class MainWindow extends JFrame {
     }
 
     private void showCommands() {
-        tableModel.fireTableDataChanged();
+        var dialog = new CommandsDialog(this, curBundle, receiver);
+        dialog.setVisible(true);
     }
 
     private void graphicsArea() {
