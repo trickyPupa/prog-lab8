@@ -2,6 +2,7 @@ package managers;
 
 import commands.AbstractServerCommand;
 import commands.StopServerCommand;
+import commands.UpdateDataServerCommand;
 import common.abstractions.AbstractReceiver;
 import common.abstractions.Handler;
 import common.commands.abstractions.AbstractCommand;
@@ -68,6 +69,7 @@ public class ServerCommandHandler implements Handler{
     static {
 //        serverCommands.put("disconnect", DisconnectServerCommand::new);
         serverCommands.put("stop", StopServerCommand::new);
+        serverCommands.put("update", UpdateDataServerCommand::new);
     }
     public static final Map<String, AbstractCommand> commandsListForClient = new HashMap<>();
 

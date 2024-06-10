@@ -29,7 +29,6 @@ public class CollectionManager extends AbstractCollectionManager<Movie> {
 //        Movie.setId_counter(vec.stream().map(Movie::getId).max(Integer::compareTo).orElse(1));
         var maxMovieLen = vec.stream().map(Movie::getName).max(Comparator.comparingInt(String::length));
         maxMovieLen.ifPresent(s -> Movie.setMaxNameLen(s.length()));
-
     }
 
     @Override
@@ -102,5 +101,10 @@ public class CollectionManager extends AbstractCollectionManager<Movie> {
     public String toString() {
         return "collection=" + collection +
                 '}';
+    }
+
+    public void update(CopyOnWriteArrayList<Movie> data) {
+        collection = data;
+        sort();
     }
 }

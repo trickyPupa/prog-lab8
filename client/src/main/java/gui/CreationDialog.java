@@ -17,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class CreationDialog extends JDialog {
@@ -89,8 +88,6 @@ public class CreationDialog extends JDialog {
                 onCancel();
             }
         });
-
-        // call onCancel() when cross is clicked
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         // call onCancel() on ESCAPE
@@ -160,7 +157,7 @@ public class CreationDialog extends JDialog {
         result = createObject();
 //        result.notify();
 
-        System.out.println(result);
+//        System.out.println(result);
 
         dispose();
     }
@@ -185,7 +182,7 @@ public class CreationDialog extends JDialog {
         return result;
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
@@ -198,6 +195,6 @@ public class CreationDialog extends JDialog {
         CreationDialog mw = new CreationDialog(frame, bundle);
         mw.setVisible(true);
         System.exit(0);
-    }
+    }*/
 
 }

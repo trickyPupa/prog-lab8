@@ -121,6 +121,11 @@ public class AuthenticationForm extends JDialog {
 
         setContentPane(contentPane);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        getRootPane().setDefaultButton(submitButton);
+
+        loginField.setText("abob");
+        passwordField.setText("1234");
+
         pack();
         setMinimumSize(new Dimension(700, 500));
         setSize(700, 700);

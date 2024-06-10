@@ -19,4 +19,10 @@ public class ServerControlReceiver {
         serverConnectionManager.close();
         return 1;
     }
+
+    public int updateData(){
+        serverConnectionManager.handler.vals.getCollectionManager().updateData();
+        serverConnectionManager.handler.vals.logger.info("Данные обновлены.");
+        return 0;
+    }
 }

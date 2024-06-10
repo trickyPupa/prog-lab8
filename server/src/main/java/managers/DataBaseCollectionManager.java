@@ -104,4 +104,8 @@ public class DataBaseCollectionManager {
     public void sort() {
         collectionManager.sort();
     }
+
+    public void updateData(){
+        collectionManager.update(dataBaseManager.getMovies());
+    }
 }

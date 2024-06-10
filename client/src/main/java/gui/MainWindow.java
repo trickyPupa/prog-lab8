@@ -11,11 +11,22 @@ import network.GetDataResponse;
 import network.Response;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.*;
 
 public class MainWindow extends JFrame {
@@ -28,6 +39,11 @@ public class MainWindow extends JFrame {
     private JLabel textAreaLabel;
     private JTable table;
     private MovieTableModel tableModel;
+
+    private JComboBox filterComboBox;
+    private JTextField filterField;
+    private JLabel tableLabel;
+    private JLabel filterLabel;
 
     private JButton createButton;
     private JButton editButton;
@@ -71,8 +87,15 @@ public class MainWindow extends JFrame {
         setLocationRelativeTo(null);
         setContentPane(mainPanel);
 
+        initData();
+        initText();
+
         language.setModel(new DefaultComboBoxModel(managers.enabledLocales));
         language.setRenderer(new LocaleListCellRenderer());
+
+        filterComboBox.setModel(new DefaultComboBoxModel(tableModel.columnNames));
+//        filterComboBox.setRenderer(new LocaleListCellRenderer());
+        filterField.setColumns(20);
 
         // создание нового фильма
         createButton.addActionListener(e -> create());
@@ -91,12 +114,17 @@ public class MainWindow extends JFrame {
                 switchLocale((Locale) language.getSelectedItem());
             }
         });
-
-        initData();
-//        initText();
+        // при изменении размера окна, изменять таблицу
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                adjustColumnWidths();
+            }
+        });
     }
 
     private void showCommands() {
+        tableModel.fireTableDataChanged();
     }
 
     private void graphicsArea() {
@@ -111,16 +139,6 @@ public class MainWindow extends JFrame {
     private void create() {
         var dialog = new CreationDialog(this, curBundle);
         dialog.setVisible(true);
-
-        /*Movie result = dialog.getResult();
-        while(true){
-            try {
-                result.wait();
-                break;
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }*/
 
         Movie result = dialog.getResult();
 
@@ -142,7 +160,6 @@ public class MainWindow extends JFrame {
                 loadData();
 
                 System.out.println(data);
-//                SwingUtilities.invokeLater(() -> tableModel.fireTableDataChanged());
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -155,7 +172,6 @@ public class MainWindow extends JFrame {
         authForm.setVisible(true);
 
         if (authForm.isOk) {
-//            setContentPane(mainPanel);
             setVisible(true);
         } else {
             System.out.println(-1);
@@ -186,6 +202,8 @@ public class MainWindow extends JFrame {
         private String[] columnNames;
         private DateTimeFormatter formatter;
 
+        protected int[] minColumnWidths;
+
         public MovieTableModel(Collection<Movie> movies, String[] columnNames, DateTimeFormatter formatter) {
             this.movies = (ArrayList<Movie>) movies;
             this.columnNames = columnNames;
@@ -207,20 +225,21 @@ public class MainWindow extends JFrame {
             Movie movie = movies.get(rowIndex);
             Person director = movie.getDirector();
             return switch (columnIndex) {
-                case 0 -> movie.getCreator();
-                case 1 -> movie.getName();
-                case 2 -> movie.getLength();
-                case 3 -> movie.getOscarsCount();
-                case 4 -> movie.getGoldenPalmCount();
-                case 5 -> movie.getCoordinates();
-                case 6 -> movie.getMpaaRating();
-                case 7 -> movie.getCreationDate().format(formatter);
-                case 8 -> director.getName();
-                case 9 -> director.getBirthday().format(formatter);
-                case 10 -> director.getEyeColor();
-                case 11 -> director.getHairColor();
-                case 12 -> director.getNationality();
-                case 13 -> director.getLocation();
+                case 0 -> movie.getId();
+                case 1 -> movie.getCreator();
+                case 2 -> movie.getName();
+                case 3 -> movie.getLength();
+                case 4 -> movie.getOscarsCount();
+                case 5 -> movie.getGoldenPalmCount();
+                case 6 -> movie.getCoordinates();
+                case 7 -> movie.getMpaaRating();
+                case 8 -> movie.getCreationDate().format(formatter);
+                case 9 -> director.getName();
+                case 10 -> director.getBirthday().format(formatter);
+                case 11 -> director.getEyeColor();
+                case 12 -> director.getHairColor();
+                case 13 -> director.getNationality();
+                case 14 -> director.getLocation();
                 default -> null;
             };
         }
@@ -244,12 +263,130 @@ public class MainWindow extends JFrame {
         }
     }
 
+    private int[] calculateColumnWidths(){
+        int columnCount = table.getColumnCount();
+        int[] minColumnWidths = new int[columnCount];
+
+        for (int column = 0; column < columnCount; column++) {
+            TableColumn tableColumn = table.getColumnModel().getColumn(column);
+            int preferredWidth = tableColumn.getMinWidth();
+            int maxWidth = tableColumn.getMaxWidth();
+
+            // Вычисляем минимальную ширину содержимого для каждого столбца
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer cellRenderer = table.getCellRenderer(row, column);
+                Component c = table.prepareRenderer(cellRenderer, row, column);
+                int width = c.getPreferredSize().width + table.getIntercellSpacing().width;
+                preferredWidth = Math.max(preferredWidth, width);
+
+                if (preferredWidth >= maxWidth) {
+                    preferredWidth = maxWidth;
+                    break;
+                }
+            }
+
+            // Определяем ширину заголовка столбца
+            int headerWidth = table.getTableHeader().getDefaultRenderer()
+                    .getTableCellRendererComponent(table, tableColumn.getHeaderValue(),
+                            false, false, 0, column)
+                    .getPreferredSize().width + table.getIntercellSpacing().width;
+
+            // Учитываем ширину заголовка
+            preferredWidth = Math.max(preferredWidth, headerWidth);
+
+            // Запоминаем минимальную ширину столбца
+            minColumnWidths[column] = preferredWidth;
+        }
+
+        return minColumnWidths;
+    }
+
+    private void adjustColumnWidths() {
+        int totalMinWidth = 0;
+        int totalWidth = table.getParent().getWidth();
+        int columnCount = table.getColumnCount();
+
+        for (int column = 0; column < columnCount; column++) {
+            totalMinWidth += tableModel.minColumnWidths[column];
+        }
+
+
+        // Если ширина всех столбцов меньше, чем доступное пространство, расширяем столбцы
+        if (totalMinWidth < totalWidth) {
+            int realWidth = 0;
+            for (int column = 0; column < columnCount - 1; column++) {
+                TableColumn tableColumn = table.getColumnModel().getColumn(column);
+                int additionalWidth = (int) Math.round((double) (totalWidth - totalMinWidth) / columnCount);
+                tableColumn.setPreferredWidth(tableModel.minColumnWidths[column] + additionalWidth);
+                realWidth += tableModel.minColumnWidths[column] + additionalWidth;
+            }
+            TableColumn tableColumn = table.getColumnModel().getColumn(columnCount - 1);
+            tableColumn.setPreferredWidth(totalWidth - realWidth);
+
+        } else {
+            // Если ширина всех столбцов больше или равна доступному пространству, используем минимальные ширины
+            for (int column = 0; column < columnCount; column++) {
+                TableColumn tableColumn = table.getColumnModel().getColumn(column);
+                tableColumn.setMinWidth(tableModel.minColumnWidths[column]);
+            }
+        }
+    }
+
     private void initData() {
         loadData();
 
         tableModel = new MovieTableModel(data, initColumns(), formatter);
-
+        // изменения модели таблицы, чтобы обновлять ширину столбцов при изменении данных
+        tableModel.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                tableModel.minColumnWidths = calculateColumnWidths();
+                adjustColumnWidths();
+            }
+        });
         table.setModel(tableModel);
+
+        TableRowSorter<MovieTableModel> sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
+
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                newFilter();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                newFilter();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                newFilter();
+            }
+
+            private void newFilter() {
+                RowFilter<MovieTableModel, Object> rf = null;
+                int selected = filterComboBox.getSelectedIndex();
+                String text = filterField.getText();
+
+                try {
+                    for (int number : new int[]{7, 11, 12, 13}) {
+                        if (number == selected) {
+                            text = text.toUpperCase(managers.currentLocale);
+                            break;
+                        }
+                    }
+
+                    rf = RowFilter.regexFilter(text, selected);
+                } catch (java.util.regex.PatternSyntaxException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                sorter.setRowFilter(rf);
+            }
+        });
+
+        tableModel.minColumnWidths = calculateColumnWidths();
+        adjustColumnWidths();
     }
 
     // обновление данных о фильмах с сервера
@@ -266,8 +403,10 @@ public class MainWindow extends JFrame {
         }
         data = new ArrayList<>(List.of(((GetDataResponse) response).getData()));
 
-        if (tableModel != null)
+        if (tableModel != null) {
             tableModel.updateMovies(data);
+            adjustColumnWidths();
+        }
     }
 
     private void initText() {
@@ -279,16 +418,20 @@ public class MainWindow extends JFrame {
         commandsButton.setText(curBundle.getString("main_command_button"));
         visualizeButton.setText(curBundle.getString("main_vis_button"));
 
+        tableLabel.setText(curBundle.getString("main_table_label"));
+        filterLabel.setText(curBundle.getString("main_filter_label"));
+
         tableModel.setColumns(initColumns());
     }
 
     private String[] initColumns(){
-        String[] columns = new String[14];
+        String[] columns = new String[15];
         String[] keys = new String[]{"movie_creator", "movie_title", "movie_length", "movie_oscars",
                 "movie_golden_palms", "movie_coordinates", "movie_mpaa", "movie_creation_date", "director_name",
                 "director_birthday", "director_eyes", "director_hair", "director_country", "director_location"};
-        for (int i = 0; i < data.size(); i++) {
-            columns[i + 1] = curBundle.getString(keys[i]);
+        columns[0] = "ID";
+        for (int i = 1; i < keys.length + 1; i++) {
+            columns[i] = curBundle.getString(keys[i - 1]);
         }
         return columns;
     }

@@ -6,7 +6,9 @@ import network.ConnectionResponse;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
@@ -73,8 +75,8 @@ public class AppStart extends JDialog {
         hostLabel.setText(curBundle.getString("app_start_host_label"));
         portLabel.setText(curBundle.getString("app_start_port_label"));
 
-        submitButton.setText(curBundle.getString("app_start_ok_button"));
-        exitButton.setText(curBundle.getString("app_start_exit_button"));
+        submitButton.setText(curBundle.getString("ok_button"));
+        exitButton.setText(curBundle.getString("exit_button"));
 
         if (!warnings.getText().isEmpty()) {
             warnings.setText(curBundle.getString("app_start_warnings"));
