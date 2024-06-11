@@ -59,7 +59,6 @@ public class CommandsDialog extends JDialog {
         });
         deleteByGPButton.addActionListener(e -> {
             int gp = Integer.parseInt(deleteByGPField.getText());
-            System.out.println("gp " + gp);
             rec.removeByGP(gp);
             dispose();
         });
@@ -69,9 +68,15 @@ public class CommandsDialog extends JDialog {
             dispose();
         });
         deleteLowerButton.addActionListener(e -> {
-            Movie movie = null;
-            rec.removeLower(movie);
-            dispose();
+            var dialog = new CreationDialog(this, curBundle);
+            dialog.setVisible(true);
+
+            Movie movie = dialog.getResult();
+            System.out.println(movie);
+            if (movie != null) {
+                rec.removeLower(movie);
+                dispose();
+            }
         });
 
         clearButton.addActionListener(e -> {

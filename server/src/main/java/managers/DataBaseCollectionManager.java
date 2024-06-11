@@ -1,8 +1,8 @@
 package managers;
 
+import common.exceptions.WrongUserException;
 import common.model.entities.Movie;
 import common.user.User;
-import exceptions.WrongUserException;
 import managers.data_base.PostgreDataBaseManager;
 
 import java.sql.SQLException;

@@ -95,7 +95,10 @@
                 <preferred-size width="150" height="50"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <editable value="false"/>
+              <font size="14"/>
+            </properties>
           </component>
           <component id="5197b" class="javax.swing.JLabel" binding="textAreaLabel">
             <constraints>

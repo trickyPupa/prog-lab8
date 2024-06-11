@@ -1,11 +1,11 @@
 package managers.data_base;
 
+import common.exceptions.WrongUserException;
 import common.model.entities.Movie;
 import common.model.entities.Person;
 import common.user.User;
 import exceptions.DataBaseConnectionException;
 import exceptions.SQLDataInsertingException;
-import exceptions.WrongUserException;
 
 import java.sql.*;
 import java.util.Collection;

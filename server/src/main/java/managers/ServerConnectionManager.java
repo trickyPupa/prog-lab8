@@ -198,7 +198,7 @@ public class ServerConnectionManager {
                     String result = handler.vals.getServerOutputManager().popResponce();
                     // историю берем из полученного запроса и добавляем к ней текущую команду
                     Collection<Command> history = HistoryManager.next(commandRequest.getCommand(), commandRequest.getHistory());
-                    sendResponse(new Response(result, history), clientAddress);
+                    sendResponse(new Response(result, history, handler.vals.getServerOutputManager().getError()), clientAddress);
                     logger.info("Отправлен ответ клиенту {}", clientAddress);
                 }
             }

@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class MainWindow extends JFrame {
@@ -61,7 +64,7 @@ public class MainWindow extends JFrame {
     private Receiver receiver;
 
     protected class Receiver {
-        public void executeCommand(Function<Object[], Command> commandFunction, Object[] args){
+        public Response executeCommand(Function<Object[], Command> commandFunction, Object[] args){
             var rm = managers.getRequestManager();
             var command = commandFunction.apply(args);
             command.setArgs(Funcs.concatObjects(new Object[]
@@ -73,14 +76,15 @@ public class MainWindow extends JFrame {
                 Response response = managers.getRequestManager().getResponse();
                 managers.history = response.getHistory();
 
-                System.out.println(response.getMessage());
+                return response;
 
-                loadData();
+//                loadData();
 
 //                System.out.println(data);
             }
             catch (IOException e) {
                 e.printStackTrace();
+                return null;
             }
         }
 
@@ -129,7 +133,7 @@ public class MainWindow extends JFrame {
 
         authentication();
 
-        setName("movie app");
+        setName(curBundle.getString("window_title"));
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
@@ -171,6 +175,16 @@ public class MainWindow extends JFrame {
                 adjustColumnWidths();
             }
         });
+
+
+        // фоновое обновление данных раз в 10 секунд
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        // Планируем задачу с фиксированным интервалом
+        int initialDelay = 10; // начальная задержка
+        int period = 10; // интервал между выполнениями
+
+        scheduler.scheduleAtFixedRate(this::loadData, initialDelay, period, TimeUnit.SECONDS);
     }
 
     private void showCommands() {
@@ -182,9 +196,33 @@ public class MainWindow extends JFrame {
     }
 
     private void deleteMovie() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow >= 0) {
+            Movie movie = data.get(table.convertRowIndexToModel(selectedRow));
+            Response result = receiver.executeCommand(RemoveByIdCommand::new, new Object[]{movie.getId()});
+
+            if (!result.getError().isPresent()) {
+                JOptionPane.showMessageDialog(this, curBundle.getString("removal_succeed"),
+                        curBundle.getString("removal_title"), JOptionPane.INFORMATION_MESSAGE);
+            } else{
+                JOptionPane.showMessageDialog(this, curBundle.getString("removal_failed"),
+                        curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
+            }
+
+            loadData();
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a movie to delete.");
+        }
     }
 
     private void edit() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow >= 0) {
+            int modelRow = table.convertRowIndexToModel(selectedRow);
+            table.editCellAt(modelRow, 0);
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a movie to edit.");
+        }
     }
 
     private void create() {
@@ -210,7 +248,12 @@ public class MainWindow extends JFrame {
 
                 loadData();
 
-                System.out.println(data);
+                var a = data.stream().filter(x -> Objects.equals(x.getName(), result.getName())).findFirst();
+                a.ifPresent(movie -> JOptionPane.showMessageDialog(this,
+                        curBundle.getString("movie_creation_message") + " " + movie.getId(),
+                        curBundle.getString("creation_title"), JOptionPane.INFORMATION_MESSAGE));
+
+//                System.out.println(data);
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -248,22 +291,20 @@ public class MainWindow extends JFrame {
         }*/
     }
 
-    protected static class MovieTableModel extends AbstractTableModel {
-        private ArrayList<Movie> movies;
+    protected class MovieTableModel extends AbstractTableModel {
         private String[] columnNames;
         private DateTimeFormatter formatter;
 
         protected int[] minColumnWidths;
 
-        public MovieTableModel(Collection<Movie> movies, String[] columnNames, DateTimeFormatter formatter) {
-            this.movies = (ArrayList<Movie>) movies;
+        public MovieTableModel(String[] columnNames, DateTimeFormatter formatter) {
             this.columnNames = columnNames;
             this.formatter = formatter;
         }
 
         @Override
         public int getRowCount() {
-            return movies.size();
+            return data.size();
         }
 
         @Override
@@ -273,7 +314,7 @@ public class MainWindow extends JFrame {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            Movie movie = movies.get(rowIndex);
+            Movie movie = data.get(rowIndex);
             Person director = movie.getDirector();
             return switch (columnIndex) {
                 case 0 -> movie.getId();
@@ -308,8 +349,7 @@ public class MainWindow extends JFrame {
             this.formatter = formatter;
         }
 
-        public void updateMovies(Collection<Movie> newMovies) {
-            this.movies = new ArrayList<>(newMovies);
+        public void updateMovies() {
             fireTableDataChanged();
         }
     }
@@ -386,7 +426,7 @@ public class MainWindow extends JFrame {
     private void initData() {
         loadData();
 
-        tableModel = new MovieTableModel(data, initColumns(), formatter);
+        tableModel = new MovieTableModel(initColumns(), formatter);
         // изменения модели таблицы, чтобы обновлять ширину столбцов при изменении данных
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
@@ -455,7 +495,7 @@ public class MainWindow extends JFrame {
         data = new ArrayList<>(List.of(((GetDataResponse) response).getData()));
 
         if (tableModel != null) {
-            tableModel.updateMovies(data);
+            tableModel.updateMovies();
             adjustColumnWidths();
         }
     }

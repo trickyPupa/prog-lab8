@@ -11,7 +11,10 @@ import common.model.enums.MpaaRating;
 import gui.utils.NumberFilter;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -63,13 +66,14 @@ public class CreationDialog extends JDialog {
     private JSpinner locZSpinner;   // location z
 
     private JLabel[] labels = {label1, label2, label3, label4, label5, label6, label7, label8, label9, label10, label11, label12};
+    private JTextField[] fields = {textField1, textField2, textField3, textField4, textField7};
 
     private ResourceBundle curBundle;
 
     protected Movie result = null;
 
-    public CreationDialog(JFrame parent, ResourceBundle bundle) {
-        super(parent, true);
+    public CreationDialog(Window parent, ResourceBundle bundle) {
+        super(parent, ModalityType.APPLICATION_MODAL);
         curBundle = bundle;
 
         setContentPane(contentPane);
@@ -109,6 +113,41 @@ public class CreationDialog extends JDialog {
         ((AbstractDocument) textField3.getDocument()).setDocumentFilter(new NumberFilter(0));
         ((AbstractDocument) textField4.getDocument()).setDocumentFilter(new NumberFilter(1));
 
+        class MyDocumentListener implements DocumentListener {
+            private JTextField field;
+
+            public MyDocumentListener(JTextField field) {
+                this.field = field;
+            }
+
+            private void updateBackgroundColor() {
+                if (field.getText().isBlank()) {
+                    field.setBackground(Color.RED);
+                } else {
+                    field.setBackground(Color.WHITE);
+                }
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateBackgroundColor();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateBackgroundColor();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateBackgroundColor();
+            }
+        }
+
+        for (JTextField i : fields){
+            i.getDocument().addDocumentListener(new MyDocumentListener(i));
+        }
+
         spinner51.setModel(new SpinnerNumberModel(0, (int) Coordinates.X_MIN_VALUE, (int) Coordinates.X_MAX_VALUE, 1));
         spinner51.setEditor(new JSpinner.NumberEditor(spinner51));
         spinner52.setModel(new SpinnerNumberModel(0, (long) Coordinates.Y_MIN_VALUE, (long) Coordinates.Y_MAX_VALUE, 1));
@@ -133,31 +172,45 @@ public class CreationDialog extends JDialog {
     }
 
     private Movie createObject() {
-        String name = textField1.getText();
-        int oscars = Integer.parseInt(textField2.getText());
-        Integer goldenPalms = textField3.getText().isBlank() ? null : Integer.parseInt(textField3.getText());
-        long length = Long.parseLong(textField4.getText());
-        Coordinates coords = new Coordinates((int) spinner51.getValue(), ((Double) spinner52.getValue()).longValue());
-        MpaaRating mpaa = (MpaaRating) comboBox6.getSelectedItem();
+        try {
+            String name = textField1.getText();
+            int oscars = Integer.parseInt(textField2.getText());
+            Integer goldenPalms = textField3.getText().isBlank() ? null : Integer.parseInt(textField3.getText());
+            long length = Long.parseLong(textField4.getText());
+            Coordinates coords = new Coordinates((int) spinner51.getValue(), ((Double) spinner52.getValue()).longValue());
+            MpaaRating mpaa = (MpaaRating) comboBox6.getSelectedItem();
 
-        String personName = textField7.getText();
-        LocalDate date = ((SpinnerDateModel) dateSpinner.getModel()).getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        EyeColor eyeColor = (EyeColor) comboBox9.getSelectedItem();
-        HairColor hairColor = (HairColor) comboBox10.getSelectedItem();
-        Country country = (Country) comboBox11.getSelectedItem();
-        Location location = new Location(((Double) locXSpinner.getValue()).floatValue(), ((Double) locYSpinner.getValue()).longValue(), (int) locZSpinner.getValue());
+            String personName = textField7.getText();
+            LocalDate date = ((SpinnerDateModel) dateSpinner.getModel()).getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            EyeColor eyeColor = (EyeColor) comboBox9.getSelectedItem();
+            HairColor hairColor = (HairColor) comboBox10.getSelectedItem();
+            Country country = (Country) comboBox11.getSelectedItem();
+            Location location = new Location(((Double) locXSpinner.getValue()).floatValue(), ((Double) locYSpinner.getValue()).longValue(), (int) locZSpinner.getValue());
 
-        Person director = new Person(personName, date, eyeColor, hairColor, country, location);
-        Movie movie = new Movie(name, oscars, goldenPalms, length, coords, mpaa, director);
+            Person director = new Person(personName, date, eyeColor, hairColor, country, location);
+            Movie movie = new Movie(name, oscars, goldenPalms, length, coords, mpaa, director);
 
-        return movie;
+            return movie;
+        } catch (NumberFormatException e){
+            checkFields();
+            JOptionPane.showMessageDialog(this, curBundle.getString("invalid_args"),
+                    curBundle.getString("error_title"), JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+    }
+
+    public void checkFields(){
+        for(var i : fields){
+            if(i.getText().isBlank()){
+                i.setBackground(Color.RED);
+            }
+        }
     }
 
     private void onOK() {
         result = createObject();
-//        result.notify();
-
-//        System.out.println(result);
+        if (result == null)
+            return;
 
         dispose();
     }

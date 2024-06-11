@@ -4,10 +4,10 @@ import common.abstractions.AbstractReceiver;
 import common.abstractions.IOutputManager;
 import common.commands.abstractions.AbstractCommand;
 import common.exceptions.WrongArgumentException;
+import common.exceptions.WrongUserException;
 import common.model.entities.Movie;
 import common.user.User;
 import exceptions.FinishConnecton;
-import exceptions.WrongUserException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -232,7 +232,9 @@ public class ServerCommandReceiver extends AbstractReceiver {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 } catch (WrongUserException e) {
+                    shell.getServerOutputManager().addError(e);
                     shell.getServerOutputManager().print("У вас недостаточно прав для удаления элемента id=" + id + ".");
+                    return;
                 }
                 shell.getServerOutputManager().print("Элемент c id=" + id + "удален.");
             });
@@ -319,6 +321,7 @@ public class ServerCommandReceiver extends AbstractReceiver {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 } catch (WrongUserException e) {
+                    shell.getServerOutputManager().addError(e);
                     shell.getServerOutputManager().print("У вас недостаточно прав для изменения элемента id=" + id + ".");
                     return;
                 }
