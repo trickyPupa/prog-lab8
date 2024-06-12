@@ -40,7 +40,7 @@ public class AppStart extends JDialog {
         setResizable(false);
         setMaximumSize(new Dimension(700, 500));
         setLocation(700, 300);
-        setTitle("App Start");
+        setTitle("Server settings");
 
         curBundle = ResourceBundle.getBundle("gui", managers.getCurrentLocale());
         initText();
@@ -114,6 +114,12 @@ public class AppStart extends JDialog {
 
             managers.getRequestManager().makeRequest(new ConnectionRequest());
             ConnectionResponse answer = (ConnectionResponse) managers.getRequestManager().getResponse();
+
+            if (!answer.isSuccess()){
+                throw new PortUnreachableException();
+            }
+            var cmList = answer.getCommandList();
+            managers.setCommands(cmList);
 
             System.out.println(answer.getMessage());
         } catch (UnknownHostException | PortUnreachableException e) {

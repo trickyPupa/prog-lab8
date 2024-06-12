@@ -1,19 +1,22 @@
 package gui;
 
 import client.ClientRequestManager;
-import client.GuiClientReceiver;
+import common.commands.abstractions.AbstractCommand;
 import common.commands.abstractions.Command;
 import common.user.Session;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
 
 public class ManagersContainer {
     protected ClientRequestManager requestManager;
-    protected GuiClientReceiver receiver;
     protected Locale currentLocale = Locale.getDefault();
     protected Session session;
     protected Collection<Command> history;
+    public Map<String, Function<Object[], Command>> commands = new HashMap<>();
 
     protected final Locale[] enabledLocales;
 
@@ -23,14 +26,6 @@ public class ManagersContainer {
 
     public ClientRequestManager getRequestManager() {
         return requestManager;
-    }
-
-    public GuiClientReceiver getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(GuiClientReceiver receiver) {
-        this.receiver = receiver;
     }
 
     protected void setRequestManager(ClientRequestManager requestManager) {
@@ -55,5 +50,12 @@ public class ManagersContainer {
 
     public Collection<Command> getHistory() {
         return history;
+    }
+
+    public void setCommands(Map<String, AbstractCommand> cmlist){
+        commands.clear();
+        for (String name : cmlist.keySet()){
+            commands.put(name, cmlist.get(name).getConstructor());
+        }
     }
 }

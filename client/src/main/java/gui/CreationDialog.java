@@ -18,6 +18,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ResourceBundle;
@@ -70,16 +71,27 @@ public class CreationDialog extends JDialog {
 
     private ResourceBundle curBundle;
 
+    protected Movie changingMovie = null; // если != null, значит окно редактирования
     protected Movie result = null;
 
     public CreationDialog(Window parent, ResourceBundle bundle) {
         super(parent, ModalityType.APPLICATION_MODAL);
         curBundle = bundle;
 
+        init();
+    }
+
+    public CreationDialog(Window parent, ResourceBundle bundle, Movie movie) {
+        super(parent, ModalityType.APPLICATION_MODAL);
+        curBundle = bundle;
+        changingMovie = movie;
+
+        init();
+    }
+
+    private void init(){
         setContentPane(contentPane);
         getRootPane().setDefaultButton(buttonOK);
-//        setResizable(false);
-//        setMaximumSize(new Dimension(700, 500));
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -94,7 +106,6 @@ public class CreationDialog extends JDialog {
         });
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
@@ -103,9 +114,10 @@ public class CreationDialog extends JDialog {
 
         setUpComponents();
 
-        setLocation(700, 200);
+        setLocation(600, 200);
         pack();
         setSize(1100, 700);
+        setResizable(false);
     }
 
     private void setUpComponents() {
@@ -153,6 +165,12 @@ public class CreationDialog extends JDialog {
         spinner52.setModel(new SpinnerNumberModel(0, (long) Coordinates.Y_MIN_VALUE, (long) Coordinates.Y_MAX_VALUE, 1));
         spinner52.setEditor(new JSpinner.NumberEditor(spinner52));
 
+        /*JSpinner.NumberEditor editor = (JSpinner.NumberEditor) spinner51.getEditor();
+        JTextField textField = editor.getTextField();
+        Dimension preferredSize = textField.getPreferredSize();
+        preferredSize.width = 50;  // Можно настроить ширину по вашему усмотрению
+        textField.setPreferredSize(preferredSize);*/
+
         dateSpinner.setModel(new SpinnerDateModel());
         dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, curBundle.getString("date.format")));
 
@@ -163,12 +181,54 @@ public class CreationDialog extends JDialog {
 
         locXSpinner.setModel(new SpinnerNumberModel(0.0, -Float.MAX_VALUE, Float.MAX_VALUE, 0.1));
         locXSpinner.setEditor(new JSpinner.NumberEditor(locXSpinner, "0.0"));
-        locYSpinner.setModel(new SpinnerNumberModel(0, Long.MIN_VALUE, Long.MAX_VALUE, 1));
+        locYSpinner.setModel(new SpinnerNumberModel(0L, Long.MIN_VALUE, Long.MAX_VALUE, 1));
         locYSpinner.setEditor(new JSpinner.NumberEditor(locYSpinner));
         locZSpinner.setModel(new SpinnerNumberModel(0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
         locZSpinner.setEditor(new JSpinner.NumberEditor(locZSpinner));
 
         initText();
+    }
+
+    private void initText() {
+        if(changingMovie == null) {
+            setTitle(curBundle.getString("creation_title"));
+            header.setText(curBundle.getString("creation_header"));
+        } else {
+            setTitle(curBundle.getString("update_title"));
+            header.setText(curBundle.getString("update_header"));
+
+            // поля Movie
+            textField1.setText(changingMovie.getName());
+            textField2.setText(String.valueOf(changingMovie.getOscarsCount()));
+            textField3.setText(changingMovie.getGoldenPalmCount().toString());
+            textField4.setText(String.valueOf(changingMovie.getLength()));
+
+            spinner51.setValue(changingMovie.getCoordinates().getX());
+            spinner52.setValue(changingMovie.getCoordinates().getY());
+
+            comboBox6.setSelectedItem(changingMovie.getMpaaRating());
+
+            // поля Person
+            Person director = changingMovie.getDirector();
+            textField7.setText(director.getName());
+
+            dateSpinner.setValue(Date.valueOf(director.getBirthday()));
+
+            comboBox9.setSelectedItem(director.getEyeColor());
+            comboBox10.setSelectedItem(director.getHairColor());
+            comboBox11.setSelectedItem(director.getLocation());
+
+            locXSpinner.setValue(director.getLocation().getX());
+            locYSpinner.setValue(director.getLocation().getY());
+            locZSpinner.setValue(director.getLocation().getZ());
+        }
+        personLabel.setText(curBundle.getString("creation_person"));
+
+        buttonOK.setText(curBundle.getString("creation_ok_button"));
+        buttonCancel.setText(curBundle.getString("creation_cancel_button"));
+        for (int i = 0; i < labels.length; i++) {
+            labels[i].setText(curBundle.getString("creation_label" + (i + 1)) + ":");
+        }
     }
 
     private Movie createObject() {
@@ -177,7 +237,7 @@ public class CreationDialog extends JDialog {
             int oscars = Integer.parseInt(textField2.getText());
             Integer goldenPalms = textField3.getText().isBlank() ? null : Integer.parseInt(textField3.getText());
             long length = Long.parseLong(textField4.getText());
-            Coordinates coords = new Coordinates((int) spinner51.getValue(), ((Double) spinner52.getValue()).longValue());
+            Coordinates coords = new Coordinates(((Number) spinner51.getValue()).intValue(), ((Number) spinner52.getValue()).longValue());
             MpaaRating mpaa = (MpaaRating) comboBox6.getSelectedItem();
 
             String personName = textField7.getText();
@@ -185,7 +245,8 @@ public class CreationDialog extends JDialog {
             EyeColor eyeColor = (EyeColor) comboBox9.getSelectedItem();
             HairColor hairColor = (HairColor) comboBox10.getSelectedItem();
             Country country = (Country) comboBox11.getSelectedItem();
-            Location location = new Location(((Double) locXSpinner.getValue()).floatValue(), ((Double) locYSpinner.getValue()).longValue(), (int) locZSpinner.getValue());
+            Location location = new Location(((Number) locXSpinner.getValue()).floatValue(),
+                    ((Number) locYSpinner.getValue()).longValue(), ((Number) locZSpinner.getValue()).intValue());
 
             Person director = new Person(personName, date, eyeColor, hairColor, country, location);
             Movie movie = new Movie(name, oscars, goldenPalms, length, coords, mpaa, director);
@@ -217,18 +278,6 @@ public class CreationDialog extends JDialog {
 
     private void onCancel() {
         dispose();
-    }
-
-    private void initText() {
-        setTitle(curBundle.getString("creation_title"));
-        header.setText(curBundle.getString("creation_header"));
-        personLabel.setText(curBundle.getString("creation_person"));
-
-        buttonOK.setText(curBundle.getString("creation_ok_button"));
-        buttonCancel.setText(curBundle.getString("creation_cancel_button"));
-        for (int i = 0; i < labels.length; i++) {
-            labels[i].setText(curBundle.getString("creation_label" + (i + 1)) + ":");
-        }
     }
 
     public Movie getResult() {

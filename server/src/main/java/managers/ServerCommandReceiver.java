@@ -31,6 +31,7 @@ public class ServerCommandReceiver extends AbstractReceiver {
         Movie obj = (Movie) args[2];
         if (shell.getCollectionManager().contains(obj)){
             shell.getServerOutputManager().print("Элемент уже существует в коллекции");
+            shell.getServerOutputManager().addError(new Exception("element_already_exists"));
         } else {
 //            obj.setGeneratedFields();
             try {
@@ -225,6 +226,7 @@ public class ServerCommandReceiver extends AbstractReceiver {
 
         if (a.isEmpty()){
             shell.getServerOutputManager().print("В коллекции нет элемента с id=" + id + ".");
+            shell.getServerOutputManager().addError(new Exception("no_such_element"));
         } else {
             a.forEach((x) -> {
                 try {
@@ -290,11 +292,11 @@ public class ServerCommandReceiver extends AbstractReceiver {
         if (args.length < 4) {
             throw new WrongArgumentException("недостаточно аргументов - update");
         }
-        if (!isInt((String) args[2])){
+        if (!isInt(args[2].toString())){
 //            shell.getOutputManager().print("Некорректные аргументы.");
             throw new WrongArgumentException("update");
         }
-        int id = Integer.parseInt((String) args[2]);
+        int id = Integer.parseInt(args[2].toString());
 
         var collection = shell.getCollectionManager().getCollection();
 
@@ -307,6 +309,7 @@ public class ServerCommandReceiver extends AbstractReceiver {
             if (shell.getCollectionManager().contains(obj)){
                 shell.getServerOutputManager().print("Такой элемент уже существует в коллекции");
                 shell.getServerOutputManager().print("Элемент c id=\" + id + \" не будет обновлён.");
+                shell.getServerOutputManager().addError(new Exception("element_already_exists"));
             } else {
                 User user = (User) args[1];
 

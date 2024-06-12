@@ -130,7 +130,7 @@ public class AuthenticationForm extends JDialog {
         setMinimumSize(new Dimension(700, 500));
         setSize(700, 700);
         setLocationRelativeTo(null);
-        setTitle("authForm");
+        setTitle(curBundle.getString("auth_title"));
 
         initText();
 

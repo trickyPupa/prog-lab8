@@ -42,6 +42,7 @@ public class CommandsDialog extends JDialog {
         exitButton.addActionListener(e -> dispose());
 
         JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files", "txt"));
         scriptButton.addActionListener(new ActionListener() {
             @Override
@@ -49,11 +50,11 @@ public class CommandsDialog extends JDialog {
                 int returnValue = fileChooser.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
-                    System.out.println("Selected file: " + selectedFile.getAbsolutePath());
-
-                    // выполнение команды
 
                     dispose();
+
+                    // выполнение команды
+                    rec.executeScript(selectedFile);
                 }
             }
         });
@@ -93,7 +94,8 @@ public class CommandsDialog extends JDialog {
 
         setLocation(700, 200);
         pack();
-        setSize(700, 700);
+        setSize(600, 600);
+        setResizable(false);
     }
 
     private void setUpComponents() {

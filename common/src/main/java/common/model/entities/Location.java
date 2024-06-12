@@ -14,13 +14,24 @@ public class Location implements Checkable {
     private Integer z;
 
     public Location(){
-
     }
 
     public Location(float a, long b, int c){
         x = a;
         y = b;
         z = c;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public Long getY() {
+        return y;
+    }
+
+    public Integer getZ() {
+        return z;
     }
 
     public static Location createLocation(IInputManager input, IOutputManager output){

@@ -22,6 +22,7 @@ public class InputManager implements IInputManager {
 
     public InputManager(Reader input){
         normalInput = new BufferedReader(input);
+        temporaryInput = new ArrayDeque<>();
     }
 
     /**

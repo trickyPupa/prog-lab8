@@ -1,13 +1,13 @@
 info
 add
-Film for test
+Film 2 from file
 200
 124
 100003
 PG_13
 123
 65
-ibn Director for Test Majid
+Director della Film
 12.12.1903
 BLUE
 BLUE
