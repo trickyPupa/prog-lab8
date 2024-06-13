@@ -5,6 +5,7 @@ import common.abstractions.IOutputManager;
 import common.exceptions.InterruptException;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static common.utils.Funcs.*;
 
@@ -96,5 +97,17 @@ public class Location implements Checkable {
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Location location)) return false;
+        return Float.compare(x, location.x) == 0 && Objects.equals(y, location.y) && Objects.equals(z, location.z);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
     }
 }

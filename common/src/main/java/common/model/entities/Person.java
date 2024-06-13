@@ -184,4 +184,18 @@ public class Person implements Comparable<Person>, Checkable {
     public int compareTo(Person o) {
         return !Objects.equals(this.name, o.name) ? this.name.toLowerCase().compareTo(o.name.toLowerCase()) : -this.birthday.compareTo(o.birthday);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Person person)) return false;
+        return Objects.equals(name, person.name) && Objects.equals(birthday, person.birthday)
+                && eyeColor == person.eyeColor && hairColor == person.hairColor
+                && nationality == person.nationality && Objects.equals(location, person.location);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, birthday, eyeColor, hairColor, nationality, location);
+    }
 }

@@ -1,9 +1,9 @@
 package common.model.entities;
 
-import common.model.enums.MpaaRating;
-import common.exceptions.InterruptException;
 import common.abstractions.IInputManager;
 import common.abstractions.IOutputManager;
+import common.exceptions.InterruptException;
+import common.model.enums.MpaaRating;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import static common.utils.Funcs.*;
+import static common.utils.Funcs.isInt;
+import static common.utils.Funcs.isLong;
 import static java.lang.Math.max;
 
 /**
@@ -265,5 +266,17 @@ public class Movie implements Comparable<Movie>, Checkable {
     public int compareTo(Movie o) {
 //        return this.creationDate != o.creationDate ? this.creationDate.compareTo(o.creationDate) : this.name.compareTo(o.name);
         return !Objects.equals(this.name.toLowerCase(), o.name.toLowerCase()) ? this.name.toLowerCase().compareTo(o.name.toLowerCase()) : this.director.compareTo(o.director);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Movie movie)) return false;
+        return Objects.equals(name, movie.name) && Objects.equals(director, movie.director);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, director);
     }
 }

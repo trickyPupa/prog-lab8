@@ -46,6 +46,7 @@ public class MainWindow extends JFrame {
     private JPanel buttons;
     private JScrollPane tableScrollPane;
     private JPanel graphicsPanel;
+    private VisualizationPanel visualizationPanel;
 
     private JLabel info;
     private JTextArea textArea;
@@ -71,7 +72,7 @@ public class MainWindow extends JFrame {
     private ManagersContainer managers;
     private ResourceBundle curBundle;
     private DateTimeFormatter formatter;
-    private ArrayList<Movie> data;
+    private ArrayList<Movie> data = null;
     private Receiver receiver;
     private int graphicsMode = 0;
 
@@ -378,7 +379,7 @@ public class MainWindow extends JFrame {
             // изменение выделенного фильма
             editButton.addActionListener(e -> edit());
             // удаление выделенного фильма
-            deleteButton.addActionListener(e -> deleteMovie());
+            deleteButton.addActionListener(e -> removeMovie());
             // область визуализации
             visualizeButton.addActionListener(e -> graphicsArea());
             // показать команды
@@ -407,7 +408,10 @@ public class MainWindow extends JFrame {
         int initialDelay = 15; // начальная задержка
         int period = 15; // интервал между выполнениями
 
-        scheduler.scheduleAtFixedRate(this::loadData, initialDelay, period, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> {
+            loadData();
+            System.out.println("scheduled update");
+        }, initialDelay, period, TimeUnit.SECONDS);
     }
 
     private void showCommands() {
@@ -420,9 +424,12 @@ public class MainWindow extends JFrame {
         cl.next(centerPanel);
         graphicsMode = (graphicsMode + 1) % 2;
         visualizeButton.setText(curBundle.getString("main_vis_button" + graphicsMode));
+
+        // анимация
+        visualizationPanel.update(data);
     }
 
-    private void deleteMovie() {
+    private void removeMovie() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow >= 0) {
             Movie movie = data.get(table.convertRowIndexToModel(selectedRow));
@@ -440,7 +447,7 @@ public class MainWindow extends JFrame {
                 return;
             }
 
-            loadData();
+//            loadData();
         } else {
             JOptionPane.showMessageDialog(this, curBundle.getString("unselected_row"),
                     curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
@@ -748,7 +755,9 @@ public class MainWindow extends JFrame {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         data = new ArrayList<>(List.of(((GetDataResponse) response).getData()));
+
         if(!warningsLabel.getText().isEmpty())
             warningsLabel.setText("");
 
@@ -774,9 +783,9 @@ public class MainWindow extends JFrame {
     }
 
     private void initGraphics(){
-        VisualizationPanel panel = new VisualizationPanel(data);
+        visualizationPanel = new VisualizationPanel(data);
 
-        JScrollPane scrollPane = new JScrollPane(panel);
+        JScrollPane scrollPane = new JScrollPane(visualizationPanel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 //        scrollPane.setWheelScrollingEnabled(false);
@@ -791,41 +800,30 @@ public class MainWindow extends JFrame {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                origin = null;
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (origin != null) {
-                    JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, panel);
+                    JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, visualizationPanel);
                     if (viewPort != null) {
                         int deltaX = origin.x - e.getX();
                         int deltaY = origin.y - e.getY();
 
                         Rectangle view = viewPort.getViewRect();
-                        view.x += deltaX * 2;
-                        view.y += deltaY * 2;
+                        view.x += (int) Math.round(deltaX * 1.5);
+                        view.y += (int) Math.round(deltaY * 1.5);
 
-                        panel.scrollRectToVisible(view);
+                        visualizationPanel.scrollRectToVisible(view);
                     }
                 }
             }
         };
 
-        var mouseWheel = new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                double zoomFactor = 1.1;
-                if (e.getPreciseWheelRotation() < 0) { // Приближение
-                    panel.setScale(panel.scale * zoomFactor);
-                } else { // Отдаление
-                    panel.setScale(panel.scale / zoomFactor);
-                }
-            }
-        };
-
-        panel.addMouseListener(ma);
-        panel.addMouseMotionListener(ma);
-        scrollPane.addMouseWheelListener(mouseWheel);
+//        visualizationPanel.addMouseListener(ma);
+//        visualizationPanel.addMouseMotionListener(ma);
+//        scrollPane.addMouseWheelListener(mouseWheel);
 
         graphicsPanel.add(scrollPane);
 
