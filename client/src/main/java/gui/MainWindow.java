@@ -68,13 +68,14 @@ public class MainWindow extends JFrame {
     private JComboBox language;
     private JPanel centerPanel;
     private JLabel warningsLabel;
+    private JButton logOutButton;
 
     private ManagersContainer managers;
     private ResourceBundle curBundle;
     private DateTimeFormatter formatter;
     private ArrayList<Movie> data = null;
     private Receiver receiver;
-    private int graphicsMode = 0;
+    private int graphicsMode = 0; // 0 - таблица, 1 - график
 
     protected class Receiver extends ClientReceiver {
         private int recur_param = 0;
@@ -219,7 +220,7 @@ public class MainWindow extends JFrame {
             }
             else {
                 JOptionPane.showMessageDialog(MainWindow.this,
-                        curBundle.getString(res.getError().get().getMessage()),
+                        curBundle.getString("removal_failed"),
                         curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -359,9 +360,9 @@ public class MainWindow extends JFrame {
         setLocationRelativeTo(null);
         setContentPane(mainPanel);
 
-        initData();
-        initText();
-        initGraphics();
+//        initData();
+//        initText();
+//        initGraphics();
 
         language.setModel(new DefaultComboBoxModel(managers.enabledLocales));
         language.setRenderer(new LocaleListCellRenderer());
@@ -391,6 +392,9 @@ public class MainWindow extends JFrame {
                     switchLocale((Locale) language.getSelectedItem());
                 }
             });
+            // выйти из аккаунта
+            logOutButton.addActionListener(e -> logOut());
+
             // при изменении размера окна, изменять таблицу
             this.addComponentListener(new ComponentAdapter() {
                 @Override
@@ -404,13 +408,12 @@ public class MainWindow extends JFrame {
         // фоновое обновление данных раз в 10 секунд
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-        // Планируем задачу с фиксированным интервалом
         int initialDelay = 15; // начальная задержка
         int period = 15; // интервал между выполнениями
 
         scheduler.scheduleAtFixedRate(() -> {
             loadData();
-            System.out.println("scheduled update");
+//            System.out.println("scheduled update");
         }, initialDelay, period, TimeUnit.SECONDS);
     }
 
@@ -426,70 +429,98 @@ public class MainWindow extends JFrame {
         visualizeButton.setText(curBundle.getString("main_vis_button" + graphicsMode));
 
         // анимация
-        visualizationPanel.update(data);
+        if (graphicsMode == 1)
+            visualizationPanel.update(data);
     }
 
     private void removeMovie() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow >= 0) {
-            Movie movie = data.get(table.convertRowIndexToModel(selectedRow));
-            Response result = receiver.executeCommand(RemoveByIdCommand::new, new Object[]{movie.getId()});
-            if (result == null){
-                return;
-            }
-
-            if (result.getError().isEmpty()) {
-                JOptionPane.showMessageDialog(this, curBundle.getString("removal_succeed"),
-                        curBundle.getString("removal_title"), JOptionPane.INFORMATION_MESSAGE);
-            } else{
-                JOptionPane.showMessageDialog(this, curBundle.getString("access_error"),
+        Movie movie;
+        if (graphicsMode == 0) {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow >= 0) {
+                movie = data.get(table.convertRowIndexToModel(selectedRow));
+            } else {
+                JOptionPane.showMessageDialog(this, curBundle.getString("unselected_movie"),
                         curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
                 return;
             }
+        }
+        else {
+            movie = visualizationPanel.getSelected();
+            if (movie == null) {
+                JOptionPane.showMessageDialog(this, curBundle.getString("unselected_movie"),
+                        curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
 
-//            loadData();
+        Response result = receiver.executeCommand(RemoveByIdCommand::new, new Object[]{movie.getId()});
+        if (result == null) {
+            return;
+        }
+
+        if (result.getError().isEmpty()) {
+            JOptionPane.showMessageDialog(this, curBundle.getString("removal_succeed"),
+                    curBundle.getString("removal_title"), JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(this, curBundle.getString("unselected_row"),
+            JOptionPane.showMessageDialog(this, curBundle.getString("access_error"),
                     curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void edit() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow >= 0) {
-            int modelRow = table.convertRowIndexToModel(selectedRow);
-            Movie movie = data.get(modelRow);
-
-            // если недостаточно прав для изменения
-            if (!Objects.equals(movie.getCreator(), managers.getSession().getUser().getLogin())) {
-                JOptionPane.showMessageDialog(this, curBundle.getString("access_error"),
+        Movie movie;
+        if (graphicsMode == 0) {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow >= 0) {
+                int modelRow = table.convertRowIndexToModel(selectedRow);
+                movie = data.get(modelRow);
+            } else {
+                JOptionPane.showMessageDialog(this, curBundle.getString("unselected_movie"),
                         curBundle.getString("update_title"), JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            System.out.println(0);
+        }
+        else {
+            movie = visualizationPanel.getSelected();
+            if (movie == null) {
+                JOptionPane.showMessageDialog(this, curBundle.getString("unselected_movie"),
+                        curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
 
-            var dialog = new CreationDialog(this, curBundle, movie);
-            dialog.setVisible(true);
+        // если недостаточно прав для изменения
+        if (!Objects.equals(movie.getCreator(), managers.getSession().getUser().getLogin())) {
+            JOptionPane.showMessageDialog(this, curBundle.getString("access_error"),
+                    curBundle.getString("update_title"), JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-            Movie result = dialog.getResult();
+        System.out.println(1);
 
-            if (result != null) {
-                var response = receiver.executeCommand(UpdateCommand::new, new Object[]{movie.getId(), result});
+        var dialog = new CreationDialog(this, curBundle, movie);
+        dialog.setVisible(true);
 
-                if (response.getError().isEmpty()) {
-                    JOptionPane.showMessageDialog(this,
-                            curBundle.getString("update_succeed"),
-                            curBundle.getString("update_title"), JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            curBundle.getString(response.getError().get().getMessage()),
-                            curBundle.getString("update_title"), JOptionPane.ERROR_MESSAGE);
-                }
+        Movie result = dialog.getResult();
+
+        if (result != null) {
+            var response = receiver.executeCommand(UpdateCommand::new, new Object[]{movie.getId(), result});
+
+            System.out.println(response);
+
+            if (response.getError().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        curBundle.getString("update_succeed"),
+                        curBundle.getString("update_title"), JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        curBundle.getString(response.getError().get().getMessage()),
+                        curBundle.getString("update_title"), JOptionPane.ERROR_MESSAGE);
+            }
 
 //                loadData();
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, curBundle.getString("unselected_row"),
-                    curBundle.getString("update_title"), JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -519,34 +550,25 @@ public class MainWindow extends JFrame {
         }
     }
 
+    private void logOut(){
+        managers.setSession(null);
+        authentication();
+    }
+
     protected void authentication() {
+        setVisible(false);
         var authForm = new AuthenticationForm(managers, this);
         authForm.setVisible(true);
 
         if (authForm.isOk) {
+            initData();
+            initText();
+            initGraphics();
+
             setVisible(true);
         } else {
-            System.out.println(-1);
             close();
         }
-
-        /*synchronized (authForm.isOk) {
-            while (true) {
-                try {
-                    authForm.wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                if (authForm.isOk) {
-                    setContentPane(mainPanel);
-                    setVisible(true);
-
-                    break;
-                } else {
-    //                System.out.println(-1);
-                }
-            }
-        }*/
     }
 
     protected class MovieTableModel extends AbstractTableModel {
@@ -736,6 +758,8 @@ public class MainWindow extends JFrame {
 
         tableModel.minColumnWidths = calculateColumnWidths();
         adjustColumnWidths();
+
+
     }
 
     // загрузка данных о фильмах с сервера
@@ -765,6 +789,8 @@ public class MainWindow extends JFrame {
             tableModel.updateMovies();
             adjustColumnWidths();
         }
+        if (graphicsMode == 1)
+            visualizationPanel.update(data);
     }
 
     private void initText() {
@@ -775,6 +801,7 @@ public class MainWindow extends JFrame {
         deleteButton.setText(curBundle.getString("main_delete_button"));
         commandsButton.setText(curBundle.getString("main_command_button"));
         visualizeButton.setText(curBundle.getString("main_vis_button" + graphicsMode));
+        logOutButton.setText(curBundle.getString("main_logout_button"));
 
         tableLabel.setText(curBundle.getString("main_table_label"));
         filterLabel.setText(curBundle.getString("main_filter_label"));
@@ -819,16 +846,33 @@ public class MainWindow extends JFrame {
                     }
                 }
             }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                for (Movie obj : visualizationPanel.objects) {
+                    if (visualizationPanel.containsMovie(obj, e.getX(), e.getY())) {
+                        visualizationPanel.selectedObject = obj;
+                        JOptionPane.showMessageDialog(null, obj.toString(), "title",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        visualizationPanel.repaint();
+                        return;
+                    }
+                }
+                visualizationPanel.selectedObject = null;
+            }
         };
 
-//        visualizationPanel.addMouseListener(ma);
-//        visualizationPanel.addMouseMotionListener(ma);
+        visualizationPanel.addMouseListener(ma);
+        visualizationPanel.addMouseMotionListener(ma);
 //        scrollPane.addMouseWheelListener(mouseWheel);
 
         graphicsPanel.add(scrollPane);
 
         JViewport viewport = scrollPane.getViewport();
         viewport.setViewPosition(new Point(500, 300));
+
+        CardLayout cl = (CardLayout) (centerPanel.getLayout());
+        cl.show(centerPanel, "table");
     }
 
     private String[] initColumns(){

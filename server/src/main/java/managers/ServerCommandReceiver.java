@@ -306,7 +306,8 @@ public class ServerCommandReceiver extends AbstractReceiver {
             shell.getServerOutputManager().print("В коллекции нет элемента с id=" + id + ".");
         else{
             Movie obj = (Movie) args[3];
-            if (shell.getCollectionManager().contains(obj)){
+//            if (shell.getCollectionManager().contains(obj)){
+            if (false){
                 shell.getServerOutputManager().print("Такой элемент уже существует в коллекции");
                 shell.getServerOutputManager().print("Элемент c id=\" + id + \" не будет обновлён.");
                 shell.getServerOutputManager().addError(new Exception("element_already_exists"));

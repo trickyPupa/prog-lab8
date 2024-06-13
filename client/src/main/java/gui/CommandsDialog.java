@@ -9,7 +9,6 @@ import javax.swing.text.AbstractDocument;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class CommandsDialog extends JDialog {
@@ -122,7 +121,7 @@ public class CommandsDialog extends JDialog {
         exitButton.setText(curBundle.getString("exit_button"));
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
@@ -135,5 +134,5 @@ public class CommandsDialog extends JDialog {
         CommandsDialog mw = new CommandsDialog(frame, bundle, null);
         mw.setVisible(true);
         System.exit(0);
-    }
+    }*/
 }
