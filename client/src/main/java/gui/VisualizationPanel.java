@@ -3,36 +3,29 @@ package gui;
 import common.model.entities.Coordinates;
 import common.model.entities.Movie;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 class VisualizationPanel extends JPanel /*implements MouseWheelListener, MouseListener, MouseMotionListener*/ {
     private static final float SATURATION = 0.7f; // насыщенность
-    private static final float BRIGHTNESS = 0.8f; // яркость
+    private static final float BRIGHTNESS = 0.6f; // яркость
 
     protected List<Movie> objects;
     protected Movie selectedObject = null;
-    private ArrayList<Movie> added = new ArrayList<>();
-    private ArrayList<Movie> removed = new ArrayList<>();
+    private Movie animated = null;
+    private double angle = 0;
+    private Timer timer;
+
+    protected BufferedImage image;
 
     private HashMap<String, Color> colors = new HashMap<>();
 
-    private double zoomFactor = 1;
-    private double prevZoomFactor = 1;
-    private boolean zoomer;
-    private boolean dragger;
-    private boolean released;
-    private double xOffset = 0;
-    private double yOffset = 0;
-    private int xDiff;
-    private int yDiff;
-    private Point startPoint;
 
     VisualizationPanel(List<Movie> data) {
         setLayout(new BorderLayout());
@@ -46,6 +39,13 @@ class VisualizationPanel extends JPanel /*implements MouseWheelListener, MouseLi
                 Color color = Color.getHSBColor(hue, SATURATION, BRIGHTNESS);
                 colors.put(obj.getCreator(), color);
             }
+        }
+
+        try {
+            image = ImageIO.read(getClass().getClassLoader().getResourceAsStream("cinema.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            image = null;
         }
 
         /*addMouseWheelListener(this);
@@ -80,23 +80,41 @@ class VisualizationPanel extends JPanel /*implements MouseWheelListener, MouseLi
 
     void draw(Graphics g, Movie mov) {
         Coordinates coords = mov.getCoordinates();
+        int width = 40;
+        int height = 40;
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        int x = centerX + coords.getX() - width / 2;
+        int y = (int) (centerY - coords.getY()) - height / 2;
 
         var g2 = (Graphics2D) g;
         g2.setColor(colors.get(mov.getCreator()));
 
-        int width = 20;
-        int height = 20;
-        int centerX = getWidth() / 2;
-        int centerY = getHeight() / 2;
-        int x = centerX + coords.getX();
-        int y = (int) (centerY - coords.getY());
+        if(image != null) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.fillRect(x - width / 2, y - height / 2, width, height);
+            // Создаем новое изображение с цветовой заливкой
+            BufferedImage coloredImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D gImg = coloredImage.createGraphics();
+            gImg.drawImage(image, 0, 0, width, height, null);
+            gImg.setComposite(AlphaComposite.SrcAtop);
+
+            gImg.setColor(colors.get(mov.getCreator()));
+            gImg.fillRect(0, 0, width, height);
+            gImg.dispose();
+
+            // Рисуем раскрашенное изображение
+            g2.drawImage(coloredImage, x, y, width, height, this);
+        }
+        else {
+            g2.fillRect(x, y, width, height);
+        }
 
         if (mov == selectedObject) {
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             g2.setColor(Color.black);
             g2.setStroke(new BasicStroke(2));
-            g2.drawRect(x - width / 2, y - height / 2, width, height);
+            g2.drawRect(x, y, width, height);
         }
     }
 
@@ -113,7 +131,7 @@ class VisualizationPanel extends JPanel /*implements MouseWheelListener, MouseLi
         int x = coords.getX() + getWidth() / 2;
         int y = getHeight() / 2 - (int) coords.getY();
 
-        int size = (int) (20 * zoomFactor);
+        int size = 20;
 
         return mx >= x - size / 2 && mx <= x + size / 2
                 && my >= y - size / 2 && my <= y + size / 2;
@@ -137,40 +155,52 @@ class VisualizationPanel extends JPanel /*implements MouseWheelListener, MouseLi
         }
     }
 
-    private void animation(){
-        new Timer(20, new ActionListener() {
-            int dx = 2;
-            int dy = 2;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (Movie obj : objects) {
-                    appearance(obj);
-                }
-                repaint();
-            }
-        }).start();
-    }
-
     private void appearance(Movie obj){
-        ;
+        animated = obj;
+
+        angle = 0.0d;
+        timer = new Timer(50, e -> {
+            angle += Math.toRadians(5);
+            if (angle == 2 * Math.PI) {
+                timer.stop();
+            }
+            System.out.println(angle);
+            repaint();
+        });
+        timer.start();
+
+        animated = null;
     }
 
     private void fading(Movie obj){
-        ;
+        animated = obj;
+
+        angle = 0.0d;
+        timer = new Timer(50, e -> {
+            angle -= Math.toRadians(5);
+            if (angle == -2 * Math.PI) {
+                timer.stop();
+            }
+            System.out.println(angle);
+            repaint();
+        });
+        timer.start();
+
+        animated = null;
     }
 
     public void update(List<Movie> newData){
         for (Movie obj : newData) {
             if (!objects.contains(obj)) {
-                appearance(obj);
                 scrollRectToVisible(new Rectangle(objX(obj) - 50, objY(obj) - 50, 100, 100));
+//                appearance(obj);
             }
         }
         for (Movie obj : objects) {
             if(!newData.contains(obj)){
-                fading(obj);
                 scrollRectToVisible(new Rectangle(objX(obj)- 50, objY(obj) - 50, 100, 100));
+//                fading(obj);
+
                 /*try {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
@@ -180,5 +210,7 @@ class VisualizationPanel extends JPanel /*implements MouseWheelListener, MouseLi
         }
 
         objects = newData;
+        selectedObject = null;
+        repaint();
     }
 }

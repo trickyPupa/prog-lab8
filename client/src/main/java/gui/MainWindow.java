@@ -40,6 +40,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
@@ -86,7 +87,12 @@ public class MainWindow extends JFrame {
             setOutput(new GuiOutputManager());
         }
 
-        protected class GuiOutputManager implements IOutputManager{
+        @Override
+        protected void modelObjectInput(Object[] args) {
+            addArg(args, Movie.createMovieNoText(inputManager, outputManager));
+        }
+
+        protected class GuiOutputManager implements IOutputManager {
 
             @Override
             public void print(String s) {
@@ -99,15 +105,15 @@ public class MainWindow extends JFrame {
             }
         }
 
-        private void setInput(IInputManager inp){
+        private void setInput(IInputManager inp) {
             inputManager = inp;
         }
 
-        private void setOutput(IOutputManager out){
+        private void setOutput(IOutputManager out) {
             outputManager = out;
         }
 
-        public void nextCommand(String line) throws IOException{
+        public void nextCommand(String line) throws IOException {
             line = line.strip();
             String commandName;
             Object[] args = {};
@@ -116,12 +122,12 @@ public class MainWindow extends JFrame {
             if (line.contains(" ")) {
                 commandName = line.substring(0, line.indexOf(" ")).strip();
                 args = line.substring(1 + commandName.length()).split(" ");
-            } else{
+            } else {
                 commandName = line.strip();
 //            args = new String[]{""};
             }
 
-            if (!commands.containsKey(commandName)){
+            if (!commands.containsKey(commandName)) {
                 throw new NoSuchCommandException(line);
             }
             Command currentCommand = commands.get(commandName).apply(args);
@@ -132,11 +138,11 @@ public class MainWindow extends JFrame {
 
             // выполнение команды и отправка запроса серверу
 
-            if (currentCommand.getClass() == ExitCommand.class){
+            if (currentCommand.getClass() == ExitCommand.class) {
                 managers.getRequestManager().makeRequest(new CommandRequest(currentCommand, managers.history));
                 currentCommand.execute(this);
-            } else{
-                if (currentCommand.getClass() == HistoryCommand.class){
+            } else {
+                if (currentCommand.getClass() == HistoryCommand.class) {
                     history();
                 }
                 currentCommand.execute(this);
@@ -161,7 +167,7 @@ public class MainWindow extends JFrame {
         }
 
 
-        public Response executeCommand(Function<Object[], Command> commandFunction, Object[] args){
+        public Response executeCommand(Function<Object[], Command> commandFunction, Object[] args) {
             var command = commandFunction.apply(args);
             command.setArgs(Funcs.concatObjects(new Object[]
                     {command, managers.getSession().getUser()}, command.getArgs()));
@@ -171,7 +177,7 @@ public class MainWindow extends JFrame {
             return executeCommand(command);
         }
 
-        public Response executeCommand(Command command){
+        public Response executeCommand(Command command) {
             var rm = managers.getRequestManager();
             rm.makeRequest(new CommandRequest(command, managers.getHistory()));
 
@@ -181,60 +187,57 @@ public class MainWindow extends JFrame {
 
                 loadData();
 
-                if(!warningsLabel.getText().isEmpty())
+                if (!warningsLabel.getText().isEmpty())
                     warningsLabel.setText("");
 
                 return response;
-            }
-            catch (PortUnreachableException e){
+            } catch (PortUnreachableException e) {
                 serverUnavailable();
                 return null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 return null;
             }
         }
 
-        public Response executeCommand(Function<Object[], Command> commandFunction){
+        public Response executeCommand(Function<Object[], Command> commandFunction) {
             return executeCommand(commandFunction, new Object[0]);
         }
 
-        public void clear(){
+        public void clear() {
             var res = executeCommand(ClearCommand::new);
             JOptionPane.showMessageDialog(MainWindow.this, curBundle.getString("removal_all"),
                     curBundle.getString("clearing_title"), JOptionPane.INFORMATION_MESSAGE);
         }
 
-        public void removeLower(Movie movie){
+        public void removeLower(Movie movie) {
             executeCommand(RemoveLowerCommand::new, new Object[]{movie});
             JOptionPane.showMessageDialog(MainWindow.this, curBundle.getString("removal_all"),
                     curBundle.getString("removal_title"), JOptionPane.INFORMATION_MESSAGE);
         }
 
-        public void removeById(int id){
+        public void removeById(int id) {
             var res = executeCommand(RemoveByIdCommand::new, new Object[]{id});
             if (res.getError().isEmpty()) {
                 JOptionPane.showMessageDialog(MainWindow.this, curBundle.getString("removal_succeed"),
                         curBundle.getString("removal_title"), JOptionPane.INFORMATION_MESSAGE);
-            }
-            else {
+            } else {
                 JOptionPane.showMessageDialog(MainWindow.this,
                         curBundle.getString("removal_failed"),
                         curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
             }
         }
 
-        public void removeByGP(int gp){
+        public void removeByGP(int gp) {
             var res = executeCommand(RemoveAllByGoldenPalmCountCommand::new, new Object[]{gp});
             JOptionPane.showMessageDialog(MainWindow.this,
                     curBundle.getString("removal_all"),
                     curBundle.getString("removal_title"), JOptionPane.INFORMATION_MESSAGE);
         }
 
-        public void history(){
+        public void history() {
             StringBuilder res = new StringBuilder();
-            for(Command i : managers.history){
+            for (Command i : managers.history) {
                 res.append(i.getName()).append("\n");
             }
             res.append("\n");
@@ -275,44 +278,38 @@ public class MainWindow extends JFrame {
 //                inputManager.setTemporaryInput(new BufferedReader(car));
                 setInput(new InputManager(new BufferedReader(car)));
 
-            }
-            catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 throw new FileException("Нет файла с указанным именем");
-            }
-            catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
                 return;
             }
 
-            while(true){
+            while (true) {
                 try {
                     nextCommand();
                     System.out.println("A");
-                }
-                catch (WrongArgumentException e){
+                } catch (WrongArgumentException e) {
                     outputManager.print(e.toString());
-                } catch (InterruptException e){
+                } catch (InterruptException e) {
                     outputManager.print("Ввод данных остановлен.");
-                } catch (NoSuchCommandException e){
+                } catch (NoSuchCommandException e) {
                     outputManager.print("Нет такой команды в доступных.");
                 } catch (RecursionException e) {
                     outputManager.print("Рекурсия в исполняемом файле.");
                     break;
-                } catch (FileException e){
+                } catch (FileException e) {
                     outputManager.print(e.getMessage());
-                }
-                catch (ConnectionsFallsExcetion e){
+                } catch (ConnectionsFallsExcetion e) {
                     outputManager.print("Произошел разрыв соединения с сервером.");
                     break;
-                }
-                catch (RuntimeException e){
+                } catch (RuntimeException e) {
                     System.out.println("Непредвиденная ошибка в ходе выполнения программы.");
                     System.out.println(e);
                     outputManager.print(e);
                     outputManager.print(Arrays.toString(e.getStackTrace()));
                     break;
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     break;
                 }
             }
@@ -329,8 +326,7 @@ public class MainWindow extends JFrame {
 
             Pattern pattern = Pattern.compile("execute_script .*");
             var patternMatcher = pattern.matcher(str);
-            while (patternMatcher.find())
-            {
+            while (patternMatcher.find()) {
                 i++;
                 Path newPath = Path.of(patternMatcher.group().split(" ")[1]);
 //            if(checkRecursion(newPath, stack, i) != 0) return i;
@@ -444,8 +440,7 @@ public class MainWindow extends JFrame {
                         curBundle.getString("removal_title"), JOptionPane.ERROR_MESSAGE);
                 return;
             }
-        }
-        else {
+        } else {
             movie = visualizationPanel.getSelected();
             if (movie == null) {
                 JOptionPane.showMessageDialog(this, curBundle.getString("unselected_movie"),
@@ -481,8 +476,7 @@ public class MainWindow extends JFrame {
                 return;
             }
             System.out.println(0);
-        }
-        else {
+        } else {
             movie = visualizationPanel.getSelected();
             if (movie == null) {
                 JOptionPane.showMessageDialog(this, curBundle.getString("unselected_movie"),
@@ -497,8 +491,6 @@ public class MainWindow extends JFrame {
                     curBundle.getString("update_title"), JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        System.out.println(1);
 
         var dialog = new CreationDialog(this, curBundle, movie);
         dialog.setVisible(true);
@@ -541,8 +533,7 @@ public class MainWindow extends JFrame {
                 a.ifPresent(movie -> JOptionPane.showMessageDialog(this,
                         curBundle.getString("movie_creation_message") + " " + movie.getId(),
                         curBundle.getString("creation_title"), JOptionPane.INFORMATION_MESSAGE));
-            }
-            else {
+            } else {
                 JOptionPane.showMessageDialog(this,
                         curBundle.getString(response.getError().get().getMessage()),
                         curBundle.getString("creation_title"), JOptionPane.ERROR_MESSAGE);
@@ -550,7 +541,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void logOut(){
+    private void logOut() {
         managers.setSession(null);
         authentication();
     }
@@ -634,7 +625,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private int[] calculateColumnWidths(){
+    private int[] calculateColumnWidths() {
         int columnCount = table.getColumnCount();
         int[] minColumnWidths = new int[columnCount];
 
@@ -725,10 +716,12 @@ public class MainWindow extends JFrame {
             public void insertUpdate(DocumentEvent e) {
                 newFilter();
             }
+
             @Override
             public void removeUpdate(DocumentEvent e) {
                 newFilter();
             }
+
             @Override
             public void changedUpdate(DocumentEvent e) {
                 newFilter();
@@ -748,7 +741,7 @@ public class MainWindow extends JFrame {
                     }
 
                     rf = RowFilter.regexFilter(text, selected);
-                } catch (java.util.regex.PatternSyntaxException e) {
+                } catch (PatternSyntaxException e) {
                     e.printStackTrace();
                     return;
                 }
@@ -759,7 +752,7 @@ public class MainWindow extends JFrame {
         tableModel.minColumnWidths = calculateColumnWidths();
         adjustColumnWidths();
 
-
+        graphicsMode = 0;
     }
 
     // загрузка данных о фильмах с сервера
@@ -771,18 +764,16 @@ public class MainWindow extends JFrame {
         Response response;
         try {
             response = requestManager.getResponse();
-        }
-        catch (PortUnreachableException e){
+        } catch (PortUnreachableException e) {
             serverUnavailable();
             return;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         data = new ArrayList<>(List.of(((GetDataResponse) response).getData()));
 
-        if(!warningsLabel.getText().isEmpty())
+        if (!warningsLabel.getText().isEmpty())
             warningsLabel.setText("");
 
         if (tableModel != null) {
@@ -807,9 +798,17 @@ public class MainWindow extends JFrame {
         filterLabel.setText(curBundle.getString("main_filter_label"));
 
         tableModel.setColumns(initColumns());
+        tableModel.fireTableStructureChanged();
+
+        filterComboBox.setModel(new DefaultComboBoxModel(tableModel.columnNames));
     }
 
-    private void initGraphics(){
+    private void initGraphics() {
+        try {
+            graphicsPanel.remove(0);
+        } catch (IndexOutOfBoundsException ignored) {
+        }
+
         visualizationPanel = new VisualizationPanel(data);
 
         JScrollPane scrollPane = new JScrollPane(visualizationPanel);
@@ -852,7 +851,8 @@ public class MainWindow extends JFrame {
                 for (Movie obj : visualizationPanel.objects) {
                     if (visualizationPanel.containsMovie(obj, e.getX(), e.getY())) {
                         visualizationPanel.selectedObject = obj;
-                        JOptionPane.showMessageDialog(null, obj.toString(), "title",
+                        JOptionPane.showMessageDialog(null, obj.toString(),
+                                curBundle.getString("movie_info"),
                                 JOptionPane.INFORMATION_MESSAGE);
                         visualizationPanel.repaint();
                         return;
@@ -875,7 +875,7 @@ public class MainWindow extends JFrame {
         cl.show(centerPanel, "table");
     }
 
-    private String[] initColumns(){
+    private String[] initColumns() {
         String[] columns = new String[15];
         String[] keys = new String[]{"movie_creator", "movie_title", "movie_length", "movie_oscars",
                 "movie_golden_palms", "movie_coordinates", "movie_mpaa", "movie_creation_date", "director_name",
@@ -896,7 +896,7 @@ public class MainWindow extends JFrame {
         initText();
     }
 
-    private void serverUnavailable(){
+    private void serverUnavailable() {
         warningsLabel.setText(curBundle.getString("server_unavailable"));
     }
 

@@ -89,7 +89,7 @@ public class CreationDialog extends JDialog {
         init();
     }
 
-    private void init(){
+    private void init() {
         setContentPane(contentPane);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -156,7 +156,7 @@ public class CreationDialog extends JDialog {
             }
         }
 
-        for (JTextField i : fields){
+        for (JTextField i : fields) {
             i.getDocument().addDocumentListener(new MyDocumentListener(i));
         }
 
@@ -190,7 +190,7 @@ public class CreationDialog extends JDialog {
     }
 
     private void initText() {
-        if(changingMovie == null) {
+        if (changingMovie == null) {
             setTitle(curBundle.getString("creation_title"));
             header.setText(curBundle.getString("creation_header"));
         } else {
@@ -252,7 +252,7 @@ public class CreationDialog extends JDialog {
             Movie movie = new Movie(name, oscars, goldenPalms, length, coords, mpaa, director);
 
             return movie;
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             checkFields();
             JOptionPane.showMessageDialog(this, curBundle.getString("invalid_args"),
                     curBundle.getString("error_title"), JOptionPane.ERROR_MESSAGE);
@@ -260,9 +260,9 @@ public class CreationDialog extends JDialog {
         }
     }
 
-    public void checkFields(){
-        for(var i : fields){
-            if(i.getText().isBlank()){
+    public void checkFields() {
+        for (var i : fields) {
+            if (i.getText().isBlank()) {
                 i.setBackground(Color.RED);
             }
         }

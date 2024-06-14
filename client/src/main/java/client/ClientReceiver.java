@@ -131,7 +131,7 @@ public class ClientReceiver extends AbstractReceiver {
         modelObjectInput(args);
     }
 
-    private void modelObjectInput(Object[] args){
+    protected void modelObjectInput(Object[] args){
         addArg(args, Movie.createMovie(inputManager, outputManager));
     }
 }

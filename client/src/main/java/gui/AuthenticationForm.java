@@ -15,6 +15,7 @@ import network.UserAuthRequest;
 import network.UserAuthResponse;
 import network.UserRegisterRequest;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -69,17 +70,21 @@ public class AuthenticationForm extends JDialog {
         public void authUser(Object[] args) {
             String login = loginField.getText();
             String password = Arrays.toString(passwordField.getPassword());
+            if (login.isEmpty() || password.isEmpty()){
+                warnings.setText(curBundle.getString("fill_in_gaps"));
+                throw new RuntimeException();
+            }
 
             var pair = AuthUser.getUser(login, password, managers.getRequestManager());
+            if (pair == null){
+                warnings.setText(curBundle.getString("user_not_found"));
+                throw new RuntimeException();
+            }
+
             User user = pair.getFirst();
             String salt = pair.getSecond();
 
             managers.setSession(new Session(user, salt));
-
-            if (user == null){
-                warnings.setText("Login not found");
-                return;
-            }
 
             addArg(args, user);
         }
@@ -88,27 +93,34 @@ public class AuthenticationForm extends JDialog {
             String login = registerLoginField.getText();
             String password = Arrays.toString(registerPwdField.getPassword());
             String repeatPassword = Arrays.toString(repeatPwdField.getPassword());
-            if (!password.equals(repeatPassword)){
-                warnings.setText("Passwords do not match");
-                return;
+            if (login.isEmpty() || password.isEmpty() || repeatPassword.isEmpty()){
+                warnings.setText(curBundle.getString("fill_in_gaps"));
+                throw new RuntimeException();
+            }
+
+            System.out.println(password);
+            System.out.println(repeatPassword);
+            if (!password.equals(repeatPassword)) {
+                System.out.println(3);
+                warnings.setText(curBundle.getString("wrong_pass"));
+                throw new RuntimeException();
             }
 
             var pair = RegisterUser.getUser(login, password, managers.getRequestManager());
+            if (pair == null) {
+                warnings.setText(curBundle.getString("login_exists"));
+                throw new RuntimeException();
+            }
+
             User user = pair.getFirst();
             String salt = pair.getSecond();
 
             managers.setSession(new Session(user, salt));
 
-            if (user == null){
-                warnings.setText("Login already exists");
-                return;
-            }
-
             addArg(args, user);
         }
 
         public void logOut(Object[] args) {
-
         }
     }
 
@@ -120,19 +132,30 @@ public class AuthenticationForm extends JDialog {
         changeModeTexts = new String[]{curBundle.getString("auth_change_1"), curBundle.getString("auth_change_2")};
 
         setContentPane(contentPane);
+
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         getRootPane().setDefaultButton(submitButton);
 
-        loginField.setText("abob");
-        passwordField.setText("1234");
+//        loginField.setText("abob");
+//        passwordField.setText("1234");
 
         pack();
         setMinimumSize(new Dimension(700, 500));
-        setSize(700, 700);
+        setSize(800, 700);
         setLocationRelativeTo(null);
         setTitle(curBundle.getString("auth_title"));
 
         initText();
+
+        // картинка
+        try {
+            Image image = ImageIO.read(getClass().getClassLoader().getResourceAsStream("grass_square.png"));
+            var size = pictureLabel.getPreferredSize();
+            image = image.getScaledInstance(350, 350, Image.SCALE_SMOOTH);
+            pictureLabel.setIcon(new ImageIcon(image));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         warnings.setOpaque(false);
         /*String[] displayed = new String[managers.enabledLocales.length];
@@ -210,20 +233,26 @@ public class AuthenticationForm extends JDialog {
     }
 
     protected void authorize(int a) {
-        // a == 1 - авторизация; a == 2 - регистрация
-        if (a == 1) {
-            Command currentCommand = new AuthCommand(new Object[]{});
-            currentCommand.setArgs(Funcs.concatObjects(new Object[]{currentCommand}, currentCommand.getArgs()));
-            currentCommand.execute(authReceiver);
+        try {
+            // a == 1 - авторизация; a == 2 - регистрация
+            if (a == 1) {
+                Command currentCommand = new AuthCommand(new Object[]{});
+                currentCommand.setArgs(Funcs.concatObjects(new Object[]{currentCommand}, currentCommand.getArgs()));
+                currentCommand.execute(authReceiver);
 
-            // проверка пользователя на сервере
-            managers.getRequestManager().makeRequest(new UserAuthRequest(currentCommand));
-        } else {
-            Command currentCommand = new RegisterCommand(new Object[]{});
-            currentCommand.setArgs(Funcs.concatObjects(new Object[]{currentCommand}, currentCommand.getArgs()));
-            currentCommand.execute(authReceiver);
+                // проверка пользователя на сервере
+                managers.getRequestManager().makeRequest(new UserAuthRequest(currentCommand));
+            } else {
+                Command currentCommand = new RegisterCommand(new Object[]{});
+                currentCommand.setArgs(Funcs.concatObjects(new Object[]{currentCommand}, currentCommand.getArgs()));
+                currentCommand.execute(authReceiver);
 
-            managers.getRequestManager().makeRequest(new UserRegisterRequest(currentCommand, managers.getSession().getSalt()));
+                managers.getRequestManager().makeRequest(new UserRegisterRequest(currentCommand, managers.getSession().getSalt()));
+            }
+        }
+        catch (RuntimeException e){
+//            System.out.println(e);
+            return;
         }
 
         // сделать ожидание

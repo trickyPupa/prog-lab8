@@ -10,7 +10,7 @@
     <children>
       <component id="f9517" class="javax.swing.JLabel" binding="pictureLabel">
         <constraints>
-          <grid row="1" column="1" row-span="3" col-span="1" vsize-policy="6" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="1" row-span="3" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <horizontalAlignment value="0"/>

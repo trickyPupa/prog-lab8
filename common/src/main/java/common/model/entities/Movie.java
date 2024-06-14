@@ -209,7 +209,6 @@ public class Movie implements Comparable<Movie>, Checkable {
 
 
         // "Имя режиссёра", "Дата рождения режиссёра (ДД.ММ.ГГГГ)", "Цвет глаз режиссёра (BLUE, YELLOW, ORANGE, WHITE, BROWN)"
-
         try {
             for (String a : args_checkers.keySet()){
                 Predicate<String> check = args_checkers.get(a);
@@ -242,11 +241,83 @@ public class Movie implements Comparable<Movie>, Checkable {
         return elem;
     }
 
-//    public void setGeneratedFields(){
-//        id_counter++;
-//        id = id_counter;
-//        creationDate = LocalDate.now();
-//    }
+    public static Movie createMovieNoText(IInputManager input, IOutputManager output){
+        Movie elem = new Movie();
+
+        Map<String, Predicate<String>> args_checkers = new LinkedHashMap<>();
+        args_checkers.put("название", x -> {
+            if (!x.isBlank()){
+                elem.setName(x);
+                return true;
+            }
+            return false;
+        });
+        args_checkers.put("количество премий Оскар (целое число <2*10^9 и >-2*10^9)", x -> {
+            if (isInt(x) && !x.equals("0")){
+                elem.setOscarsCount(Integer.parseInt(x));
+                return true;
+            }
+            return false;
+        });
+        args_checkers.put("количество золотых пальмовых ветвей (целое число <2*10^9 и >-2*10^9 или пустая строка)", x -> {
+            if (isInt(x) && !x.equals("0")){
+                elem.setGoldenPalmCount(Integer.parseInt(x));
+                return true;
+            } else if (x.isBlank()){
+                elem.setGoldenPalmCount(null);
+                return true;
+            }
+            return false;
+        });
+        args_checkers.put("продолжительность фильма (целое число <9*10^18 и >-9*10^18)", x -> {
+            if (isLong(x) && !x.equals("0")){
+                elem.setLength(Long.parseLong(x));
+                return true;
+            }
+            return false;
+        });
+        args_checkers.put("MPAA рейтинг фильма (PG, PG_13, NC_17)", x -> {
+            if (MpaaRating.contains(x.toUpperCase())){
+                elem.setMpaaRating(MpaaRating.valueOf(x.toUpperCase()));
+                return true;
+            }
+            return false;
+        });
+
+
+        // "Имя режиссёра", "Дата рождения режиссёра (ДД.ММ.ГГГГ)", "Цвет глаз режиссёра (BLUE, YELLOW, ORANGE, WHITE, BROWN)"
+        try {
+            for (String a : args_checkers.keySet()){
+                Predicate<String> check = args_checkers.get(a);
+                output.print("Введите " + a + ":\n");
+                String line = input.nextLine();
+                output.print(line + "\n");
+                if (line == null || line.strip().equals("exit")){
+                    throw new InterruptException();
+                }
+
+                while (!check.test(line)){
+                    output.print("Некорректные данные.\n");
+
+                    output.print("'" + line + "'\n");
+
+                    output.print("Введите " + a + ":\n");
+                    line = input.nextLine();
+                }
+            }
+
+            elem.setCoordinates(Coordinates.createCoordsNoText(input, output));
+            elem.setDirector(Person.createPersonNoText(input, output));
+
+        } catch (IOException e){
+            output.print(e.getMessage() + "\n");
+        }
+
+        if (elem.name.length() > maxNameLen)
+            maxNameLen = elem.name.length();
+
+        return elem;
+    }
 
 
     @Override

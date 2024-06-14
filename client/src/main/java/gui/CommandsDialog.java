@@ -58,14 +58,24 @@ public class CommandsDialog extends JDialog {
             }
         });
         deleteByGPButton.addActionListener(e -> {
-            int gp = Integer.parseInt(deleteByGPField.getText());
-            rec.removeByGP(gp);
-            dispose();
+            try {
+                int gp = Integer.parseInt(deleteByGPField.getText());
+                rec.removeByGP(gp);
+                dispose();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, curBundle.getString("invalid_args"),
+                        curBundle.getString("error_title"), JOptionPane.ERROR_MESSAGE);
+            }
         });
         deleteByIdButton.addActionListener(e -> {
-            int id = Integer.parseInt(deleteByIdField.getText());
-            rec.removeById(id);
-            dispose();
+            try {
+                int id = Integer.parseInt(deleteByIdField.getText());
+                rec.removeById(id);
+                dispose();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, curBundle.getString("invalid_args"),
+                        curBundle.getString("error_title"), JOptionPane.ERROR_MESSAGE);
+            }
         });
         deleteLowerButton.addActionListener(e -> {
             var dialog = new CreationDialog(this, curBundle);

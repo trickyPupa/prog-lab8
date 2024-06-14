@@ -89,6 +89,63 @@ public class Location implements Checkable {
         }
     }
 
+    public static Location createLocationNoText(IInputManager input, IOutputManager output){
+        try{
+            float a;
+            long b;
+            int c;
+
+            while(true) {
+                output.print("Введиите координату X локации режиссёра (число с плавающей точкой с количеством знаков <10^38): \n");
+                String line = input.nextLine();
+                output.print(line + "\n");
+                if (line == null || line.equals("exit")){
+                    throw new InterruptException();
+                }
+                if (isFloat(line)){
+                    a = Float.parseFloat(line);
+                    break;
+                }
+                output.print("Некорректные данные.\n");
+            }
+
+            while(true) {
+                output.print("Введиите координату Y локации режиссёра (целое число <9*10^18 и >-9*10^18): \n");
+                String line = input.nextLine();
+                output.print(line + "\n");
+                if (line == null || line.equals("exit")){
+                    throw new InterruptException();
+                }
+                if (isLong(line)){
+                    b = Long.parseLong(line);
+                    break;
+                }
+                output.print("Некорректные данные.\n");
+            }
+
+            while(true) {
+                output.print("Введиите координату Z локации режиссёра (целое число <2*10^9 и >-2*10^9): \n");
+                String line = input.nextLine();
+                output.print(line + "\n");
+                if (line == null || line.equals("exit")){
+                    throw new InterruptException();
+                }
+                if (isInt(line)){
+                    c = Integer.parseInt(line);
+                    break;
+                }
+                output.print("Некорректные данные.\n");
+            }
+
+            return new Location(a, b, c);
+
+        } catch (IOException e){
+            output.print(e.getMessage());
+            output.print("Что-то случилось, введите команду заново.\n");
+            throw new InterruptException();
+        }
+    }
+
     @Override
     public boolean checkItself(){
         return y != null && z != null;

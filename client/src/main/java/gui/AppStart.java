@@ -115,13 +115,13 @@ public class AppStart extends JDialog {
             managers.getRequestManager().makeRequest(new ConnectionRequest());
             ConnectionResponse answer = (ConnectionResponse) managers.getRequestManager().getResponse();
 
-            if (!answer.isSuccess()){
+            if (!answer.isSuccess()) {
                 throw new PortUnreachableException();
             }
             var cmList = answer.getCommandList();
             managers.setCommands(cmList);
 
-            System.out.println(answer.getMessage());
+//            System.out.println(answer.getMessage());
         } catch (UnknownHostException | PortUnreachableException e) {
             warnings.setText(curBundle.getString("app_start_connection_error"));
             System.out.println(e);

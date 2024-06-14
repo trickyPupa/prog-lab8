@@ -116,7 +116,7 @@
                 <constraints/>
                 <properties>
                   <editable value="false"/>
-                  <font size="14"/>
+                  <font size="11"/>
                 </properties>
               </component>
             </children>

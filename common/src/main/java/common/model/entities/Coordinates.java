@@ -1,13 +1,14 @@
 package common.model.entities;
 
-import common.exceptions.InterruptException;
 import common.abstractions.IInputManager;
 import common.abstractions.IOutputManager;
+import common.exceptions.InterruptException;
 
 import java.io.IOException;
 
+import static common.utils.Funcs.isInt;
+import static common.utils.Funcs.isLong;
 import static java.lang.Math.sqrt;
-import static common.utils.Funcs.*;
 
 public class Coordinates implements Checkable, Comparable<Coordinates> {
     public static final int X_MAX_VALUE = Integer.MAX_VALUE;
@@ -72,6 +73,45 @@ public class Coordinates implements Checkable, Comparable<Coordinates> {
 
         } catch (IOException e){
             output.print(e.getMessage());
+        }
+
+        return elem;
+    }
+
+    public static Coordinates createCoordsNoText(IInputManager input, IOutputManager output){
+        Coordinates elem = new Coordinates();
+
+        try{
+            while(true) {
+                output.print("Введиите координату X фильма (целое число >-879 и <2*10^9): \n");
+                String line = input.nextLine();
+                output.print(line + "\n");
+                if (line == null || line.equals("exit")){
+                    throw new InterruptException();
+                }
+                if (isInt(line) && Integer.parseInt(line) > -879){
+                    elem.setX(Integer.parseInt(line));
+                    break;
+                }
+                output.print("Некорректные данные.\n");
+            }
+
+            while(true) {
+                output.print("Введиите координату Y фильма (целое число <=155 и >-9*10^18): \n");
+                String line = input.nextLine();
+                output.print(line + "\n");
+                if (line == null || line.equals("exit")){
+                    throw new InterruptException();
+                }
+                if (isLong(line) && Long.parseLong(line) <= 155){
+                    elem.setY(Long.parseLong(line));
+                    break;
+                }
+                output.print("Некорректные данные.\n");
+            }
+
+        } catch (IOException e){
+            output.print(e.getMessage() + "\n");
         }
 
         return elem;
